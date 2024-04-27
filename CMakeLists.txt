@@ -2,10 +2,10 @@
 cmake_minimum_required(VERSION 3.12)
 
 # Project name
-project(project)
+project(sistop)
 
 # Source files
-add_executable(project_exec ./src/main.c)
+add_executable(sistop ./src/main.c)
 
 # Link libraries
 # target_link_libraries(project_exec pthread)
