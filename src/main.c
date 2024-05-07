@@ -1,7 +1,7 @@
 #include <stdio.h>
+#include "kernel/kernel.h"
 
 int main(int argc, char *argv[])
 {
-  printf("Hello World!\n");
-  return 0;
+    kernel__create();
 }
