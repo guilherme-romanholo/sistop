@@ -9,7 +9,7 @@
 #include "../utils/utils.h"
 #include "../kernel/kernel.h"
 
-void process__create(const char *file) {
+void Process__create(const char *file) {
     char buffer[BUFFER_SIZE];
     FILE *fp;
 
@@ -18,7 +18,7 @@ void process__create(const char *file) {
         exit(1);
     }
 
-    process_t *process = malloc(sizeof(process_t));
+    Process *process = malloc(sizeof(Process));
 
     process->pid = kernel->proc_id_counter++;
     process->state = NEW;
@@ -39,6 +39,5 @@ void process__create(const char *file) {
     // TODO: Read instructions
 
     // TODO: Allocate memory to process
-
-    process->state = READY;
+    Kernel__syscall(REQ_LOAD_MEMORY, (void *) process);
 }

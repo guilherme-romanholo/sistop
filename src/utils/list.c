@@ -6,8 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-list_t* list__create() {
-    list_t *list = malloc(sizeof(list_t));
+List* List__create() {
+    List *list = malloc(sizeof(List));
 
     if (list == NULL) {
         printf("Not memory to allocate list.");
@@ -21,8 +21,8 @@ list_t* list__create() {
     return list;
 }
 
-void list__append(list_t *list, void *content) {
-    node_t *node = node__create(content);
+void List__append(List *list, void *content) {
+    Node *node = Node__create(content);
 
     if (node == NULL)
         return;
@@ -38,8 +38,8 @@ void list__append(list_t *list, void *content) {
     list->size++;
 }
 
-node_t* node__create(void *content) {
-    node_t *node = malloc(sizeof(node_t));
+Node* Node__create(void *content) {
+    Node *node = malloc(sizeof(Node));
 
     if (node == NULL) {
         printf("Not memory to allocate node.");

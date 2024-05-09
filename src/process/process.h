@@ -12,9 +12,9 @@ typedef enum {
     RUNNING = 2,
     WAITING = 3,
     TERMINATED = 4
-} pstatus_t;
+} ProcessStatus;
 
-// Process PCB
+// Process
 typedef struct {
     int pid;
     int state;
@@ -22,8 +22,8 @@ typedef struct {
     int segment_id;
     int priority;
     int segment_size;
-} process_t;
+} Process;
 
-void process__create(const char *);
+void Process__create(const char *);
 
 #endif //SISTOP_PROCESS_H

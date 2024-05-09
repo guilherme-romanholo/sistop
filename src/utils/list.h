@@ -9,17 +9,17 @@ typedef struct node {
     void *content;
     struct node *next;
     struct node *prev;
-} node_t;
+} Node;
 
 typedef struct list {
-    node_t *head;
-    node_t *tail;
+    Node *head;
+    Node *tail;
     int size;
-} list_t;
+} List;
 
-list_t* list__create();
-void list__append(list_t*, void*);
-node_t* node__create(void*);
+List* List__create();
+void List__append(List *, void *);
+Node* Node__create(void *);
 
 
 #endif //SISTOP_LIST_H
