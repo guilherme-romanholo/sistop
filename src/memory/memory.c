@@ -26,7 +26,7 @@ void Memory__req_load_memory(Process *process, SegmentTable *seg_table) {
     Segment *segment = Memory__create_segment(process);
 
     int remaining = seg_table->remaining_memory - process->segment_size;
-    seg_table->remaining_memory = remaining ? (remaining > 0) : 0;
+    seg_table->remaining_memory = (remaining > 0) ? remaining : 0;
 
     // TODO: Add Swap
 
