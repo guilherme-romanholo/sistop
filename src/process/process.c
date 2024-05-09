@@ -30,7 +30,7 @@ void Process__create(const char *file) {
     fgets(buffer, BUFFER_SIZE, fp);
     process->priority = atoi(buffer);
     fgets(buffer, BUFFER_SIZE, fp);
-    process->segment_size = atoi(buffer);
+    process->segment_size = atoi(buffer) * KBYTE;
 
     fclose(fp);
 
