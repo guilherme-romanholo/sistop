@@ -11,16 +11,12 @@
 
 void Process__create(const char *file) {
     char buffer[BUFFER_SIZE];
-    FILE *fp;
-
-    if ((fp = fopen(file, "r")) == NULL) {
-        printf("Process file does not exist.");
-        exit(1);
-    }
+    FILE *fp = fopen(file, "r");
 
     Process *process = malloc(sizeof(Process));
 
-    process->pid = kernel->proc_id_counter++;
+    process->pid = kernel->proc_id_counter;
+    kernel->proc_id_counter++;
     process->state = NEW;
 
     fgets(buffer, BUFFER_SIZE, fp);
