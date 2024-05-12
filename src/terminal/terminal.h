@@ -5,6 +5,8 @@
 #ifndef SISTOP_TERMINAL_H
 #define SISTOP_TERMINAL_H
 
+#include "../process/process.h"
+
 void Terminal__init();
 void Terminal__input_process();
 void Terminal__list_seg_table();

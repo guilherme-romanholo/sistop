@@ -2,8 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/// Declare Kernel
 Kernel *kernel;
 
+/// Create the Kernel
 void Kernel__create() {
     kernel = malloc(sizeof(Kernel));
 
@@ -17,6 +19,9 @@ void Kernel__create() {
     kernel->seg_table = Memory__create_segment_table();
 }
 
+/// Make a syscall
+/// \param call Syscall name
+/// \param arg Syscall argument
 void Kernel__syscall(Syscall call, void *arg) {
     switch (call) {
         case CREATE_PROCESS:
@@ -33,6 +38,9 @@ void Kernel__syscall(Syscall call, void *arg) {
     }
 }
 
+/// Make a interruption
+/// \param interruption Interruption name
+/// \param arg Interruption argument
 void Kernel__interrupt(Interruption interruption, void *arg) {
     switch (interruption) {
         case FIN_LOAD_MEMORY:

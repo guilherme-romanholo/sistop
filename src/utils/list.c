@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/// Create a linked list
+/// \return Return the created linked list
 List* List__create() {
     List *list = malloc(sizeof(List));
 
@@ -21,6 +23,9 @@ List* List__create() {
     return list;
 }
 
+/// Append a new node in the list
+/// \param list List to append node
+/// \param content Node content
 void List__append(List *list, void *content) {
     Node *node = Node__create(content);
 
@@ -38,6 +43,9 @@ void List__append(List *list, void *content) {
     list->size++;
 }
 
+/// Creates a new node with content
+/// \param content Node content
+/// \return Created node
 Node* Node__create(void *content) {
     Node *node = malloc(sizeof(Node));
 
