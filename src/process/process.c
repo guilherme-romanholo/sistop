@@ -9,18 +9,14 @@
 #include "../utils/utils.h"
 #include "../kernel/kernel.h"
 
-void process__create(const char *file) {
+void Process__create(const char *file) {
     char buffer[BUFFER_SIZE];
-    FILE *fp;
+    FILE *fp = fopen(file, "r");
 
-    if ((fp = fopen(file, "r")) == NULL) {
-        printf("Process file does not exist.");
-        exit(1);
-    }
+    Process *process = malloc(sizeof(Process));
 
-    process_t *process = malloc(sizeof(process_t));
-
-    process->pid = kernel->proc_id_counter++;
+    process->pid = kernel->proc_id_counter;
+    kernel->proc_id_counter++;
     process->state = NEW;
 
     fgets(buffer, BUFFER_SIZE, fp);
@@ -30,7 +26,7 @@ void process__create(const char *file) {
     fgets(buffer, BUFFER_SIZE, fp);
     process->priority = atoi(buffer);
     fgets(buffer, BUFFER_SIZE, fp);
-    process->segment_size = atoi(buffer);
+    process->segment_size = atoi(buffer) * KBYTE;
 
     fclose(fp);
 
@@ -39,6 +35,5 @@ void process__create(const char *file) {
     // TODO: Read instructions
 
     // TODO: Allocate memory to process
-
-    process->state = READY;
+    Kernel__syscall(REQ_LOAD_MEMORY, (void *) process);
 }

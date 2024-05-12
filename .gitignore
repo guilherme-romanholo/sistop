@@ -1,2 +1,10 @@
 sistop
 .idea
+.vscode
+output
+cmake-build-debug
+build/CMakeFiles
+build/CMakeCache.txt
+build/sistop
+build/cmake_install.cmake
+build/Makefile
