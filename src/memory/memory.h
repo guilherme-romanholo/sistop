@@ -8,18 +8,20 @@
 #include "../utils/list.h"
 #include "../process/process.h"
 
-// Multiplicar para obter a quantidade correta em BYTES (padrão)
-
+/// Memory units to use everything with BYTEs
+/// Example: 32Kb = 32 * KBYTE
 #define MAX_MEMORY (1 * GBYTE)
 #define GBYTE (1024 * MBYTE)
 #define MBYTE (1024 * KBYTE)
 #define KBYTE 1024
 
+/// Kernel Segment Table
 typedef struct {
     List *seg_list;
     int remaining_memory;
 } SegmentTable;
 
+/// Process Segment
 typedef struct {
     int seg_id;
     int seg_size;

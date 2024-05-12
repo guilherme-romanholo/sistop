@@ -9,6 +9,8 @@
 #include "../utils/utils.h"
 #include "../kernel/kernel.h"
 
+/// Create a process
+/// \param file File for synthetic process
 void Process__create(const char *file) {
     char buffer[BUFFER_SIZE];
     FILE *fp = fopen(file, "r");

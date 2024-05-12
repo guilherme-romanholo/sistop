@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
+/// Init the terminal interactive screen
 void Terminal__init() {
     int op, c;
 
@@ -45,6 +46,7 @@ void Terminal__init() {
     }
 }
 
+/// Input process from the file
 void Terminal__input_process() {
     FILE *fp;
     char path[30] = "../synt/", process_file[20];
@@ -64,6 +66,7 @@ void Terminal__input_process() {
     printf("\nCreate process with success.\n");
 }
 
+/// List all segments in the kernel segment table
 void Terminal__list_seg_table() {
     printf("\n");
 
@@ -83,6 +86,7 @@ void Terminal__list_seg_table() {
     printf("===================================\n");
 }
 
+/// List all process in the kernel process table
 void Terminal__list_proc_table() {
     printf("\n");
 
@@ -105,6 +109,7 @@ void Terminal__list_proc_table() {
     printf("===================================\n");
 }
 
+/// Cast status number to status name
 char *Terminal__cast_proc_state(ProcessStatus status) {
     switch (status) {
         case NEW:

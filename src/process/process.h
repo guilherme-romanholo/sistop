@@ -5,7 +5,7 @@
 #ifndef SISTOP_PROCESS_H
 #define SISTOP_PROCESS_H
 
-// Status
+/// Process status enumeration
 typedef enum {
     NEW = 0,
     READY = 1,
@@ -14,7 +14,7 @@ typedef enum {
     TERMINATED = 4
 } ProcessStatus;
 
-// Process
+/// Process struct
 typedef struct {
     int pid;
     int state;
