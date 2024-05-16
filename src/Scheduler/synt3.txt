@@ -1,0 +1,11 @@
+exec 200
+print 10
+read 20
+exec 400
+read 30
+exec 500
+exec 200
+exec 20000
+write 20
+print 150
+exec 500
