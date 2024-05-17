@@ -15,6 +15,7 @@ void Kernel__create() {
     }
 
     kernel->proc_id_counter = 1;
+    kernel->sem_table = List__create();
     kernel->proc_table = List__create();
     kernel->seg_table = Memory__create_segment_table();
 }

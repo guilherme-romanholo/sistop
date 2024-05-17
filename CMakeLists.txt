@@ -15,6 +15,8 @@ add_executable(sistop
         ./src/process/process.h
         ./src/terminal/terminal.c
         ./src/terminal/terminal.h
+        ./src/semaph/semaph.c
+        ./src/semaph/semaph.h
         ./src/utils/list.c
         ./src/utils/list.h
         ./src/utils/utils.h

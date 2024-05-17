@@ -19,6 +19,7 @@ void Terminal__init() {
         printf("| (1) Create Process       |\n");
         printf("| (2) List SegTable        |\n");
         printf("| (3) List ProcTable       |\n");
+        printf("| (4) List SemTable        |\n");
         printf("| (0) Exit                 |\n");
         printf("============================\n\n");
         printf("Option: ");
@@ -34,6 +35,9 @@ void Terminal__init() {
                 break;
             case 3:
                 Terminal__list_proc_table();
+                break;
+            case 4:
+                Terminal__list_sem_table();
                 break;
             case 0:
                 return;
@@ -79,6 +83,25 @@ void Terminal__list_seg_table() {
 
         printf("Segment Id: %d\n", segment->seg_id);
         printf("Segment Size: %d\n\n", segment->seg_size);
+
+        aux = aux->next;
+    }
+
+    printf("===================================\n");
+}
+
+void Terminal__list_sem_table() {
+    printf("\n");
+
+    Node *aux = kernel->sem_table->head;
+
+    printf("========== Semaphore Table ==========\n\n");
+
+    while (aux != NULL) {
+        Semaphore *sem = (Semaphore *)aux->content;
+
+        printf("Semaphore name: %c\n", sem->name);
+        printf("Semaphore value: %d\n\n", sem->val);
 
         aux = aux->next;
     }

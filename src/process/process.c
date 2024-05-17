@@ -1,13 +1,10 @@
-//
-// Created by guilherme on 05/05/24.
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "process.h"
 #include "../utils/utils.h"
 #include "../kernel/kernel.h"
+#include "../semaph/semaph.h"
 
 /// Create a process
 /// \param file File for synthetic process
@@ -21,7 +18,6 @@ void Process__create(const char *file) {
     process->pid = kernel->proc_id_counter++;
     process->state = NEW;
     process->pc = 0;
-    process->num_instructions = 0;
 
     // Read data
     fgets(buffer, BUFFER_SIZE, fp);
@@ -33,8 +29,9 @@ void Process__create(const char *file) {
     fgets(buffer, BUFFER_SIZE, fp);
     process->segment_size = atoi(buffer) * KBYTE;
 
-    // TODO: Read semaphores
+    // Read semaphores to kernel table
     fgets(buffer, BUFFER_SIZE, fp);
+    Semaph__read_semaphores(buffer);
 
     // TODO: Read instructions
 

@@ -1,7 +1,3 @@
-//
-// Created by guilherme on 05/05/24.
-//
-
 #ifndef SISTOP_PROCESS_H
 #define SISTOP_PROCESS_H
 
@@ -41,14 +37,6 @@ typedef struct {
     int  segment_id;
     int  priority;
     int  segment_size;
-
-    // Instructions
-    int num_instructions;
-    Instruction *instructions;
-
-    // Semaphores
-    int  num_semaphores;
-    char *semaphores; // TODO: Make semaphore type
 } Process;
 
 
