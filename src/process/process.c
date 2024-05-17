@@ -17,10 +17,13 @@ void Process__create(const char *file) {
 
     Process *process = malloc(sizeof(Process));
 
-    process->pid = kernel->proc_id_counter;
-    kernel->proc_id_counter++;
+    // Initialize process
+    process->pid = kernel->proc_id_counter++;
     process->state = NEW;
+    process->pc = 0;
+    process->num_instructions = 0;
 
+    // Read data
     fgets(buffer, BUFFER_SIZE, fp);
     process->name = strdup(buffer);
     fgets(buffer, BUFFER_SIZE, fp);
@@ -30,11 +33,12 @@ void Process__create(const char *file) {
     fgets(buffer, BUFFER_SIZE, fp);
     process->segment_size = atoi(buffer) * KBYTE;
 
-    fclose(fp);
-
     // TODO: Read semaphores
+    fgets(buffer, BUFFER_SIZE, fp);
 
     // TODO: Read instructions
+
+    fclose(fp);
 
     // TODO: Allocate memory to process
     Kernel__syscall(REQ_LOAD_MEMORY, (void *) process);

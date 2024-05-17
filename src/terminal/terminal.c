@@ -16,10 +16,10 @@ void Terminal__init() {
 
     while (1) {
         printf("========== Sistop ==========\n");
-        printf("| (1) Executar Processo    |\n");
-        printf("| (2) Verificar SegTable   |\n");
-        printf("| (3) Verificar ProcTable  |\n");
-        printf("| (0) Sair                 |\n");
+        printf("| (1) Create Process       |\n");
+        printf("| (2) List SegTable        |\n");
+        printf("| (3) List ProcTable       |\n");
+        printf("| (0) Exit                 |\n");
         printf("============================\n\n");
         printf("Option: ");
 
