@@ -58,12 +58,13 @@ void Memory__create_pages(Segment *segment, List *instructions) {
         Page *page = malloc(sizeof(Page));
         page->page_size = PAGE_SIZE;
         page->page_id = i;
+        page->instructions = List__create();
 
         qtd_instr = 0;
 
         while (qtd_instr < instructions_per_page && instructions->size != 0) {
             void *instr = List__remove_first(instructions);
-            List__append(page->instructions, instr);
+            List__append(page->instructions, (void *) instr);
             qtd_instr++;
         }
 
