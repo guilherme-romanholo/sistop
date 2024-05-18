@@ -34,11 +34,12 @@ typedef struct {
 typedef struct {
     int seg_id;
     int seg_size;
+    int num_pages;
     Page *pages;
 } Segment;
 
 SegmentTable *Memory__create_segment_table();
-Segment *Memory__create_segment(Process *);
-void Memory__req_load_memory(Process *, SegmentTable *);
+Segment *Memory__create_segment(Process *, FILE *);
+void Memory__req_load_memory(Process *, SegmentTable *, FILE *);
 
 #endif //SISTOP_MEMORY_H

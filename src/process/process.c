@@ -33,7 +33,7 @@ void Process__create(const char *file) {
     fgets(buffer, BUFFER_SIZE, fp);
     Semaph__read_semaphores(buffer);
 
-    // TODO: Read instructions
+    // TODO: Read instructions -> Feito no segmento
 
     fclose(fp);
 
