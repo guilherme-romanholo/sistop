@@ -12,73 +12,40 @@ SegmentTable *Memory__create_segment_table() {
     return seg_table;
 }
 
-Instruction Separar_op_value(char *content) {
-    Instruction i;
-    char *delimiter = " "; // Assuming this is the delimiter between operation and value
-    char *token = strtok(content, delimiter);
-
-    if (token) {
-        i.op = token; // Assign operation
-
-        // Extract value using strtok again
-        char *valueStr = strtok(NULL, delimiter);
-        if (valueStr) 
-            i.value = atoi(valueStr); // Convert value to integer
-    }
-
-    return i;
-}
-
 /// Create a segment for the process
 /// \param process Process that request segment
 /// \return Returns the new segment
 Segment *Memory__create_segment(Process *process) {
     Segment *segment = malloc(sizeof(Segment));
-    char buffer[BUFFER_SIZE];
     int instructions_per_page, qtd_instructions, num_instructions = 0;
-    FILE *fp = fopen(process->name, "r");
-
-    // Pula as 6 primeiras linhas de conteudo, direto para as instruções
-    // TODO: Caso quiser, pode ser o segment id e o segment size aqui
-    for (int i = 0; i < 6; i++)
-        fgets(buffer, BUFFER_SIZE, fp);
 
     segment->seg_id = process->segment_id;
     segment->seg_size = process->segment_size;
 
-    // TODO: Add pages with instructions
-    List *instr = List__create();
-
-    // Leitura de todas as instruções do arquivo
-    while (fgets(buffer, BUFFER_SIZE, fp) != NULL){
-        List__append(instr, buffer);
-        num_instructions++;
-    }
-
     // Seta as quantidades de paginas
-    segment->num_pages = segment->seg_size / PAGE_SIZE;
-    instructions_per_page = num_instructions / segment->num_pages;
+    // segment->num_pages = segment->seg_size / PAGE_SIZE;
+    // instructions_per_page = num_instructions / segment->num_pages;
 
-    // Aloca espaço para as paginas no segmento
-    segment->pages = malloc (segment->num_pages * sizeof(Page));
+    // // Aloca espaço para as paginas no segmento
+    // segment->pages = malloc (segment->num_pages * sizeof(Page));
 
-    for (int i = 0; i < segment->num_pages; i++){
+    // for (int i = 0; i < segment->num_pages; i++){
 
-        segment->pages[i].page_size = PAGE_SIZE;
-        qtd_instructions = 0; // Pra saber qual posição de instrução esta armazenando
-        segment->pages[i].instructions = malloc (instructions_per_page * sizeof (Instruction)); // Aloca vetor para armazenar as instruções
+    //     segment->pages[i].page_size = PAGE_SIZE;
+    //     qtd_instructions = 0; // Pra saber qual posição de instrução esta armazenando
+    //     segment->pages[i].instructions = malloc (instructions_per_page * sizeof (Instruction)); // Aloca vetor para armazenar as instruções
 
-        while (qtd_instructions < instructions_per_page && instr->head != NULL){ // TODO: Condições corretas?
+    //     while (qtd_instructions < instructions_per_page && instr->head != NULL){ // TODO: Condições corretas?
 
-            // TODO: Verificar se é semaforo
+    //         // TODO: Verificar se é semaforo
 
-            segment->pages[i].instructions[qtd_instructions++] = Separar_op_value(instr->head->content);
+    //         segment->pages[i].instructions[qtd_instructions++] = Separar_op_value(instr->head->content);
 
-            instr->head = instr->head->next;
-        }
+    //         instr->head = instr->head->next;
+    //     }
 
-        segment->pages[i].num_instructions = qtd_instructions;
-    }
+    //     segment->pages[i].num_instructions = qtd_instructions;
+    // }
 
     return segment;
 }

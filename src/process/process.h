@@ -2,6 +2,8 @@
 #define SISTOP_PROCESS_H
 
 #include "../utils/utils.h"
+#include "../utils/list.h"
+#include <stdio.h>
 
 typedef enum {
     EXEC  = 0,
@@ -13,9 +15,9 @@ typedef enum {
 } Opcode;
 
 typedef struct {
-    char op[OPCODE_SIZE];
+    int opcode;
     int  value;
-    // char *sem;
+    char sem;
 } Instruction;
 
 /// Process status enumeration
@@ -41,5 +43,8 @@ typedef struct {
 
 
 void Process__create(const char *);
+List *Process__read_instructions(FILE *, char *);
+Instruction *Process__parse_instruction(char *);
+void Process__cast_opcode(Instruction *, char *);
 
 #endif //SISTOP_PROCESS_H
