@@ -140,21 +140,21 @@ void Terminal__list_proc_instr() {
     Node *aux = kernel->seg_table->seg_list->head;
 
     while (aux != NULL) {
-        Segment *segment = (Segment *) aux;
+        Segment *segment = (Segment *) aux->content;
         printf("========== Segment %d instructions ==========\n\n", segment->seg_id);
 
         Node *aux_page = segment->pages->head;
         while (aux_page != NULL) {
             Page *page = (Page *) aux_page->content;
 
-            printf("Page number: %d", page->page_id);
-            printf("Page size: %d", page->page_size);
-            printf("Page num instructions: %d", page->instructions->size);
+            printf("\nPage number: %d\n", page->page_id);
+            printf("Page size: %d\n", page->page_size);
+            printf("Page num instructions: %d\n", page->instructions->size);
 
             Node *aux_instruction = page->instructions->head;
+            printf("Opcode | Value | Semaph\n");
             while (aux_instruction != NULL) {
                 Instruction *instr = (Instruction *) aux_instruction->content;
-                printf("Opcode | Value | Semaph\n");
                 printf("%d | %d | %c\n", instr->opcode, instr->value, instr->sem);
                 aux_instruction = aux_instruction->next;
             }
