@@ -9,7 +9,6 @@
 void Process__create(const char *file) {
     char buffer[BUFFER_SIZE];
     FILE *fp = fopen(file, "r");
-
     Process *process = malloc(sizeof(Process));
 
     // Initialize process
@@ -38,18 +37,14 @@ void Process__create(const char *file) {
     // Read instructions
     List *instructions = Process__read_instructions(fp, buffer);
 
-    // TODO: DEBUG
-    Node *head = instructions->head;
-    while (head != NULL) {
-        Instruction *i = (Instruction *) head->content;
-        printf("%d, %d, %c\n",i->opcode, i->value, i->sem);
-        head = head->next;
-    }
-
     fclose(fp);
 
-    // TODO: Allocate memory to process
-    Kernel__syscall(REQ_LOAD_MEMORY, (void *) process);
+    // Make a list for memory load request
+    List *memory_request = List__create();
+    List__append(memory_request, (void *) process);
+    List__append(memory_request, (void *) instructions);
+
+    Kernel__syscall(REQ_LOAD_MEMORY, (void *) memory_request);
 }
 
 List *Process__read_instructions(FILE *fp, char *buffer) {
@@ -96,9 +91,11 @@ void Process__cast_opcode(Instruction *instr, char *opcode) {
         instr->opcode = PRINT;
     } else if (!strncmp("P(", opcode, 2)) {
         instr->opcode = SEM_P;
+        instr->value = 200;
         instr->sem = opcode[2];
     } else if (!strncmp("V(", opcode, 2)) {
         instr->opcode = SEM_V;
+        instr->value = 200;
         instr->sem = opcode[2];
     }
 }

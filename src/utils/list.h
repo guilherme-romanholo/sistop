@@ -9,7 +9,6 @@
 typedef struct node {
     void *content;
     struct node *next;
-    struct node *prev;
 } Node;
 
 /// List struct
@@ -20,7 +19,9 @@ typedef struct list {
 } List;
 
 List* List__create();
+void List__destroy(List *list);
 void List__append(List *, void *);
+void *List__remove_first(List *list);
 Node* Node__create(void *);
 
 #endif //SISTOP_LIST_H

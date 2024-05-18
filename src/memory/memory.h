@@ -20,8 +20,8 @@
 
 /// Process Page
 typedef struct {
+    int page_id;
     int page_size;
-    int num_instructions;
     List *instructions; // (Instruction *)
 } Page;
 
@@ -40,6 +40,7 @@ typedef struct {
 
 SegmentTable *Memory__create_segment_table();
 Segment *Memory__create_segment(Process *);
-void Memory__req_load_memory(Process *, SegmentTable *);
+void Memory__create_pages(Segment *, List *);
+void Memory__req_load_memory(List *, SegmentTable *);
 
 #endif //SISTOP_MEMORY_H

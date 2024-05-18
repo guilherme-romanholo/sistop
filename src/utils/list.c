@@ -36,11 +36,38 @@ void List__append(List *list, void *content) {
         list->head = node;
     } else {
         list->tail->next = node;
-        node->prev = list->tail;
     }
 
     list->tail = node;
     list->size++;
+}
+
+void *List__remove_first(List *list) {
+    Node *removed = list->head;
+    void *content = removed->content;
+
+    if (list->head == list->tail)
+        list->head = list->tail = NULL;
+    else {
+        list->head = list->head->next;
+    }
+
+    list->size--;
+    free(removed);
+
+    return content;
+}
+
+void List__destroy(List *list){
+    Node *aux = list->head;
+
+    while (aux != NULL) {
+        Node *next = aux->next;
+        free(aux);
+        aux = next;
+    }
+
+    free(list);
 }
 
 /// Creates a new node with content
@@ -56,7 +83,6 @@ Node* Node__create(void *content) {
 
     node->content = content;
     node->next = NULL;
-    node->prev = NULL;
 
     return node;
 }

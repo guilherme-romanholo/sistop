@@ -20,6 +20,7 @@ void Terminal__init() {
         printf("| (2) List SegTable        |\n");
         printf("| (3) List ProcTable       |\n");
         printf("| (4) List SemTable        |\n");
+        printf("| (5) List Process Instr   |\n");
         printf("| (0) Exit                 |\n");
         printf("============================\n\n");
         printf("Option: ");
@@ -38,6 +39,9 @@ void Terminal__init() {
                 break;
             case 4:
                 Terminal__list_sem_table();
+                break;
+            case 5:
+                Terminal__list_proc_instr();
                 break;
             case 0:
                 return;
@@ -130,6 +134,39 @@ void Terminal__list_proc_table() {
     }
 
     printf("===================================\n");
+}
+
+void Terminal__list_proc_instr() {
+    Node *aux = kernel->seg_table->seg_list->head;
+
+    while (aux != NULL) {
+        Segment *segment = (Segment *) aux;
+        printf("========== Segment %d instructions ==========\n\n", segment->seg_id);
+
+        Node *aux_page = segment->pages->head;
+        while (aux_page != NULL) {
+            Page *page = (Page *) aux_page->content;
+
+            printf("Page number: %d", page->page_id);
+            printf("Page size: %d", page->page_size);
+            printf("Page num instructions: %d", page->instructions->size);
+
+            Node *aux_instruction = page->instructions->head;
+            while (aux_instruction != NULL) {
+                Instruction *instr = (Instruction *) aux_instruction->content;
+                printf("Opcode | Value | Semaph\n");
+                printf("%d | %d | %c\n", instr->opcode, instr->value, instr->sem);
+                aux_instruction = aux_instruction->next;
+            }
+
+            aux_page = aux_page->next;
+        }
+
+        printf("===================================\n");
+
+        aux = aux->next;
+    }
+
 }
 
 /// Cast status number to status name
