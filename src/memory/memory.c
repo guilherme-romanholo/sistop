@@ -63,7 +63,7 @@ void Memory__create_pages(Segment *segment, List *instructions) {
         qtd_instr = 0;
 
         while (qtd_instr < instructions_per_page && instructions->size != 0) {
-            void *instr = List__remove_first(instructions);
+            void *instr = List__remove_head(instructions);
             List__append(page->instructions, (void *) instr);
             qtd_instr++;
         }

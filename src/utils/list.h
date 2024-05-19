@@ -1,7 +1,3 @@
-//
-// Created by guilherme on 07/05/24.
-//
-
 #ifndef SISTOP_LIST_H
 #define SISTOP_LIST_H
 
@@ -9,6 +5,7 @@
 typedef struct node {
     void *content;
     struct node *next;
+    struct node *prev;
 } Node;
 
 /// List struct
@@ -19,9 +16,11 @@ typedef struct list {
 } List;
 
 List* List__create();
-void List__destroy(List *list);
 void List__append(List *, void *);
-void *List__remove_first(List *list);
 Node* Node__create(void *);
+void *List__remove_head(List *list);
+void List__remove_node(List *list, Node *node);
+Node *List__remove_tail(List *list);
+void List__destroy(List *list);
 
 #endif //SISTOP_LIST_H
