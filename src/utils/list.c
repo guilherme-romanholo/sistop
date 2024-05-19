@@ -1,7 +1,3 @@
-//
-// Created by guilherme on 07/05/24.
-//
-
 #include "list.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,4 +55,84 @@ Node* Node__create(void *content) {
     node->prev = NULL;
 
     return node;
+}
+
+void *List__remove_head(List *list) {
+    Node *aux = list->head;
+    void *content = list->head->content;
+
+    if (list->head) {
+
+        if (list->head->next)
+            list->head->next->prev = NULL;
+        else
+            list->tail = NULL;
+
+        list->head = list->head->next;
+
+        //Libera o nó da lista
+        aux->next = NULL;
+        aux->prev = NULL;
+        list->size--;
+    }
+
+    free(aux);
+
+    return content;
+}
+
+void List__remove_node(List *list, Node *node) {
+    if(node != NULL)
+        return;
+
+    if(node->prev != NULL)
+        node->prev->next = node->next;
+    else if(list->head == node){
+        list->head = node->next;
+        list->head->prev = NULL;
+    }
+
+    if (node->next != NULL)
+        node->next->prev = node->prev;
+    else if (list->tail == node){
+        list->tail = node->prev;
+        list->tail->next = NULL;
+    }
+
+    node->next = NULL;
+    node->prev = NULL;
+    free(node);
+    list->size--;
+}
+
+Node *List__remove_tail(List *list) {
+    Node *aux = list->tail;
+
+    if (list->tail) {
+        if (list->tail->prev)
+            list->tail->prev->next = NULL;
+        else
+            list->head = NULL;
+
+        list->tail = list->tail->prev;
+
+        //Libera o nó da lista
+        aux->next = NULL;
+        aux->prev = NULL;
+        list->size--;
+    }
+
+    return aux;
+}
+
+void List__destroy(List *list){
+    Node *aux = list->head;
+
+    while (aux != NULL) {
+        Node *next = aux->next;
+        free(aux);
+        aux = next;
+    }
+
+    free(list);
 }

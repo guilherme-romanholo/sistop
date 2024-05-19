@@ -2,6 +2,7 @@
 #define SISTOP_KERNEL_H
 
 #include "../memory/memory.h"
+#include "../semaph/semaph.h"
 
 /// Syscall enumeration
 typedef enum {
@@ -20,6 +21,7 @@ typedef enum {
 typedef struct {
     int proc_id_counter;
     List *proc_table;
+    List *sem_table;
     SegmentTable *seg_table;
 } Kernel;
 

@@ -15,9 +15,19 @@
 #define MBYTE (1024 * KBYTE)
 #define KBYTE 1024
 
+/// Memory Page Size
+#define PAGE_SIZE (8 * KBYTE)
+
+/// Process Page
+typedef struct {
+    int page_id;
+    int page_size;
+    List *instructions; // (Instruction *)
+} Page;
+
 /// Kernel Segment Table
 typedef struct {
-    List *seg_list;
+    List *seg_list; // (Segment *)
     int remaining_memory;
 } SegmentTable;
 
@@ -25,11 +35,12 @@ typedef struct {
 typedef struct {
     int seg_id;
     int seg_size;
-    // TODO: Add pages
+    List *pages; // (Page *)
 } Segment;
 
 SegmentTable *Memory__create_segment_table();
 Segment *Memory__create_segment(Process *);
-void Memory__req_load_memory(Process *, SegmentTable *);
+void Memory__create_pages(Segment *, List *);
+void Memory__req_load_memory(List *, SegmentTable *);
 
 #endif //SISTOP_MEMORY_H

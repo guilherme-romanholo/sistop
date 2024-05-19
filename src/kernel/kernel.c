@@ -1,4 +1,5 @@
 #include "kernel.h"
+#include "../utils/list.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -15,6 +16,7 @@ void Kernel__create() {
     }
 
     kernel->proc_id_counter = 1;
+    kernel->sem_table = List__create();
     kernel->proc_table = List__create();
     kernel->seg_table = Memory__create_segment_table();
 }
@@ -32,8 +34,8 @@ void Kernel__syscall(Syscall call, void *arg) {
         case INTERRUPT_PROCESS:
             break;
         case REQ_LOAD_MEMORY:
-            Memory__req_load_memory((Process *)arg, kernel->seg_table);
-            Kernel__interrupt(FIN_LOAD_MEMORY, (Process *)arg);
+            Memory__req_load_memory((List *)arg, kernel->seg_table);
+            Kernel__interrupt(FIN_LOAD_MEMORY, (List *)arg);
             break;
     }
 }
@@ -44,9 +46,16 @@ void Kernel__syscall(Syscall call, void *arg) {
 void Kernel__interrupt(Interruption interruption, void *arg) {
     switch (interruption) {
         case FIN_LOAD_MEMORY:
-            List__append(kernel->proc_table, (Process *)arg);
+            printf("");
+
+            List *memory_request = (List *) arg;
+            Process *process = (Process *) memory_request->head->content;
+            // Append new process in the process table
+            List__append(kernel->proc_table, process);
+
             // TODO: Add process to Scheduler
             // Process *process = ((Process *)arg);
             // process->state = READY;
+            break;
     }
 }
