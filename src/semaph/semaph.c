@@ -37,14 +37,14 @@ Semaphore *Semaph__semaphore_search(char name) {
         sem = (Semaphore *)aux->content;
 
         if(sem->name == name){
-            printf("Semáforo %c já foi cadastrado!\n",sem->name);
+            // printf("Semáforo %c já foi cadastrado!\n",sem->name);
             return sem;
         }
 
         aux = aux->next;
     }
 
-    printf("Semáforo %c não foi encontrado!\n", name);
+    // printf("Semáforo %c não foi encontrado!\n", name);
     return NULL;
 }
 

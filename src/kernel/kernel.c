@@ -50,7 +50,7 @@ void Kernel__interrupt(Interruption interruption, void *arg) {
 
             List *memory_request = (List *) arg;
             Process *process = (Process *) memory_request->head->content;
-            // Append new process in the process table
+
             List__append(kernel->proc_table, process);
 
             // TODO: Add process to Scheduler
