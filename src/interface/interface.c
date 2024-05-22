@@ -1,5 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
 #include "interface.h"
 #include "../kernel/kernel.h"
 
@@ -8,6 +10,8 @@ Window *kernel_win;
 Window *memory_win;
 Window *process_win;
 Window *execution_win;
+
+sem_t kernel_win_sem;
 
 // Função para desenhar uma borda com título em uma janela
 void Interface__draw_window(Window *win, const char *title) {
@@ -18,7 +22,7 @@ void Interface__draw_window(Window *win, const char *title) {
     wrefresh(win->window);
 }
 
-Window *Interface__create_window(int height, int width, int starty, int startx, const char *title, int max_lines) {
+Window *Interface__create_window(int height, int width, int starty, int startx, const char *title, int max_lines, int scroll_bool) {
     Window *win = malloc(sizeof(Window));
     win->window = newwin(height, width, starty, startx);
     win->subwindow = derwin(win->window, height - 2, width - 2, 1, 1);
@@ -26,7 +30,7 @@ Window *Interface__create_window(int height, int width, int starty, int startx, 
     win->current_line = 0;
 
     Interface__draw_window(win, title);
-    scrollok(win->subwindow, TRUE); // Habilita o scroll na sub-janela
+    scrollok(win->subwindow, scroll_bool); // Habilita o scroll na sub-janela
 
     return win;
 }
@@ -45,6 +49,24 @@ void Interface__add_line(Window *win, const char *text) {
     wrefresh(win->subwindow);
 }
 
+void Interface__add_line_no(Window *win, const char *text) {
+    // Adiciona a linha de texto à sub-janela
+    mvwprintw(win->subwindow, win->current_line, 0, "%s", text);
+    wrefresh(win->subwindow);
+}
+
+void *Interface__update_kernel_win() {
+    while (1) {
+        sem_wait(&kernel_win_sem);
+
+        char *output = malloc(sizeof(char) * BUFFER_SIZE);
+
+        sprintf(output, "Kernel Remaining: %d bytes.", kernel->seg_table->remaining_memory);
+
+        Interface__add_line_no(kernel_win, output);
+    }
+}
+
 void Interface__print_remaining_memory(int remaining) {
     char *output = malloc(sizeof(char) * BUFFER_SIZE);
     sprintf(output, "Kernel Remaining: %d bytes.", remaining);
@@ -54,10 +76,9 @@ void Interface__print_remaining_memory(int remaining) {
 void Interface__print_segment(Segment *segment, char *process_name) {
     char *output = malloc(sizeof(char) * BUFFER_SIZE);
 
-    sprintf(output, "Seg ID: %d, Seg Size: %d bytes, Proc Name: %s.",segment->seg_id, segment->seg_size, process_name);
+    sprintf(output, "Seg ID: %d, Seg Size: %d bytes, Proc Name: %s",segment->seg_id, segment->seg_size, process_name);
 
     Interface__add_line(memory_win, output);
-    Interface__print_remaining_memory(kernel->seg_table->remaining_memory);
 }
 
 int Interface__create() {
@@ -78,18 +99,22 @@ int Interface__create() {
     int max_lines = win_height - 2;
 
     // Cria as janelas
-    menu_win = Interface__create_window(win_height / 2, win_width, 0, 0, "Menu", max_lines);
-    kernel_win = Interface__create_window((win_height / 2) + 1, win_width, win_height / 2, 0, "Kernel", max_lines);
-    process_win = Interface__create_window(win_height, win_width, 0, win_width, "Process", max_lines);
-    execution_win = Interface__create_window(win_height, win_width, win_height, win_width, "Execution", max_lines);
+    menu_win = Interface__create_window(win_height / 2, win_width, 0, 0, "Menu", max_lines, TRUE);
+    kernel_win = Interface__create_window((win_height / 2) + 1, win_width, win_height / 2, 0, "Kernel", max_lines, FALSE);
+    process_win = Interface__create_window(win_height, win_width, 0, win_width, "Process", max_lines, TRUE);
+    execution_win = Interface__create_window(win_height, win_width, win_height, win_width, "Execution", max_lines, TRUE);
 
     // Memory Window
-    memory_win = Interface__create_window(win_height, win_width, win_height, 0, "Memory", max_lines);
-    Interface__print_remaining_memory(kernel->seg_table->remaining_memory);
+    memory_win = Interface__create_window(win_height, win_width, win_height, 0, "Memory", max_lines, TRUE);
 
     // Menu de entrada de dados
     mvwprintw(menu_win->window, 1, 1, "Pressione 'q' para sair");
     wrefresh(menu_win->window);
+
+    sem_init(&kernel_win_sem, 0, 1);
+
+    pthread_t kernel_win_thread;
+    pthread_create(&kernel_win_thread, NULL, Interface__update_kernel_win, NULL);
 
     // Prepara as variáveis para entrada de dados
     char input[100];

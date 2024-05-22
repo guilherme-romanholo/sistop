@@ -30,4 +30,4 @@ add_executable(sistop
 )
 
 # Link libraries
-target_link_libraries(sistop ${CURSES_LIBRARIES} form menu)
+target_link_libraries(sistop ${CURSES_LIBRARIES} form menu m pthread)

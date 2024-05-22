@@ -1,4 +1,5 @@
 #include "kernel.h"
+#include "../interface/interface.h"
 #include "../utils/list.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,7 +47,7 @@ void Kernel__syscall(Syscall call, void *arg) {
 void Kernel__interrupt(Interruption interruption, void *arg) {
     switch (interruption) {
         case FIN_LOAD_MEMORY:
-            printf("");
+            sem_post(&kernel_win_sem);
 
             List *memory_request = (List *) arg;
             Process *process = (Process *) memory_request->head->content;
