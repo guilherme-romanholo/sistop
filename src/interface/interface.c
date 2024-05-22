@@ -4,14 +4,16 @@
 #include "../kernel/kernel.h"
 
 Window *menu_win;
+Window *kernel_win;
 Window *memory_win;
 Window *process_win;
 Window *execution_win;
 
 // Função para desenhar uma borda com título em uma janela
 void Interface__draw_window(Window *win, const char *title) {
-    box(win->window, 0, 0);
     int start_x = (getmaxx(win->window) - strlen(title)) / 2;
+    box(win->window, 0, 0);
+
     mvwprintw(win->window, 0, start_x, " %s ", title);
     wrefresh(win->window);
 }
@@ -22,8 +24,10 @@ Window *Interface__create_window(int height, int width, int starty, int startx, 
     win->subwindow = derwin(win->window, height - 2, width - 2, 1, 1);
     win->max_lines = max_lines;
     win->current_line = 0;
+
     Interface__draw_window(win, title);
     scrollok(win->subwindow, TRUE); // Habilita o scroll na sub-janela
+
     return win;
 }
 
@@ -74,7 +78,8 @@ int Interface__create() {
     int max_lines = win_height - 2;
 
     // Cria as janelas
-    menu_win = Interface__create_window(win_height, win_width, 0, 0, "Menu", max_lines);
+    menu_win = Interface__create_window(win_height / 2, win_width, 0, 0, "Menu", max_lines);
+    kernel_win = Interface__create_window((win_height / 2) + 1, win_width, win_height / 2, 0, "Kernel", max_lines);
     process_win = Interface__create_window(win_height, win_width, 0, win_width, "Process", max_lines);
     execution_win = Interface__create_window(win_height, win_width, win_height, win_width, "Execution", max_lines);
 
