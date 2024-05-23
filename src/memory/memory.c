@@ -34,9 +34,6 @@ void Memory__req_load_memory(List *memory_request, SegmentTable *seg_table) {
 
     // Append segment into kernel segment table
     List__append(seg_table->seg_list, (void *)segment);
-
-    // Print in the ncurses
-    Interface__print_segment(segment, process->name);
 }
 
 /// Create a segment for the process
