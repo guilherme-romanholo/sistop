@@ -3,6 +3,7 @@
 
 #include "../memory/memory.h"
 #include <semaphore.h>
+#include <pthread.h>
 #include <ncurses.h>
 
 typedef struct {
@@ -12,13 +13,24 @@ typedef struct {
     int current_line;   // Índice da próxima linha para adicionar conteúdo
 } Window;
 
-extern sem_t kernel_win_sem;
-
+// ========== Interface ==========
 int Interface__create();
 void Interface__draw_window(Window *, const char *);
 Window *Interface__create_window(int, int, int, int, const char *, int,int );
 void Interface__add_line(Window *, const char *);
-void Interface__print_segment(Segment *, char *);
-void Interface__print_remaining_memory(int);
+void Interface__add_line_scroll(Window *, const char *);
+
+// ========== Memory ==========
+void Interface__create_memory_ui(int height, int width);
+
+// ========== Menu ==========
+extern Window *menu_win;
+void Interface__create_menu_ui(int height, int width);
+void Interface__input_menu();
+
+// ========== Kernel ==========
+extern sem_t kernel_ui_sem;
+void Interface__create_kernel_ui(int height, int width);
+void *Interface__update_kernel_ui();
 
 #endif //SISTOP_INTERFACE_H
