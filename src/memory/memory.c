@@ -1,7 +1,6 @@
 #include "memory.h"
 #include <stdlib.h>
 #include <math.h>
-#include "../interface/interface.h"
 
 /// Create the kernel segment table
 /// \return Returns segment table to the kernel

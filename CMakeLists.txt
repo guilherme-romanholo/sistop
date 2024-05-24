@@ -24,11 +24,8 @@ add_executable(sistop
         ./src/utils/list.c
         ./src/utils/list.h
         ./src/utils/utils.h
-        src/interface/interface.c
-        src/interface/memory_ui.c
-        src/interface/menu_ui.c
-        src/interface/kernel_ui.c
-        src/interface/menu_ui.c
+        ./src/interface/interface.c
+        ./src/interface/interface.h
 )
 
 # Link libraries
