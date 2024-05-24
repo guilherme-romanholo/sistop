@@ -29,7 +29,7 @@ void Interface__create_menu_ui(int height, int width);
 void Interface__input_menu();
 
 // ========== Kernel ==========
-extern sem_t kernel_ui_sem;
+extern sem_t ksem_ui;
 void Interface__create_kernel_ui(int height, int width);
 void *Interface__update_kernel_ui();
 
