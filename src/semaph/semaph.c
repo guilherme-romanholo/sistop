@@ -25,7 +25,6 @@ void Semaph__read_semaphores(char *buffer) {
             sem = Semaph__semaphore_init(buffer[i], 1);
             List__append(kernel->sem_table, (void*)sem);
         }
-        // TODO: Se existir incrementar o val dele?
     }
 }
 
