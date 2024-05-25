@@ -26,12 +26,6 @@ typedef struct {
     List *instructions; // (Instruction *)
 } Page;
 
-/// Kernel Segment Table
-typedef struct {
-    List *seg_list; // (Segment *)
-    int remaining_memory;
-} SegmentTable;
-
 /// Process Segment
 typedef struct {
     int seg_id;
@@ -39,7 +33,6 @@ typedef struct {
     List *pages; // (Page *)
 } Segment;
 
-SegmentTable *Memory__create_segment_table();
 Segment *Memory__create_segment(Process *);
 Segment *Memory__fetch_segment(int);
 void Memory__create_pages(Segment *, List *);

@@ -15,10 +15,11 @@ void Kernel__create() {
         exit(1);
     }
 
+    kernel->remaining_memory = MAX_MEMORY;
     kernel->proc_id_counter = 1;
-    kernel->sem_table = List__create();
-    kernel->proc_table = List__create();
-    kernel->seg_table = Memory__create_segment_table();
+    kernel->segment_table = List__create();
+    kernel->semaph_table = List__create();
+    kernel->pcb = List__create();
 }
 
 /// Make a syscall

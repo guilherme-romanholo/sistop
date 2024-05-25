@@ -4,17 +4,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-/// Create the kernel segment table
-/// \return Returns segment table to the kernel
-SegmentTable *Memory__create_segment_table() {
-    SegmentTable *seg_table = malloc(sizeof(SegmentTable));
-
-    seg_table->seg_list = List__create();
-    seg_table->remaining_memory = MAX_MEMORY;
-
-    return seg_table;
-}
-
 /// Make a memory request to the process
 /// \param memory_request Process that make the request
 void Memory__req_load_memory(List *memory_request) {
@@ -24,13 +13,13 @@ void Memory__req_load_memory(List *memory_request) {
 
     Memory__create_pages(segment, instructions);
 
-    int remaining = kernel->seg_table->remaining_memory - process->segment_size;
-    kernel->seg_table->remaining_memory = (remaining > 0) ? remaining : 0;
+    long remaining = kernel->remaining_memory - process->segment_size;
+    kernel->remaining_memory = (remaining > 0) ? remaining : 0;
 
     if (remaining < 0)
-        kernel->seg_table->remaining_memory += Memory__swap_out(segment);
+        kernel->remaining_memory += Memory__swap_out(segment);
 
-    List__append(kernel->seg_table->seg_list, (void *)segment);
+    List__append(kernel->segment_table, (void *)segment);
 }
 
 /// Finalize memory creation
@@ -39,7 +28,7 @@ void Memory__fin_load_memory(List *memory_request) {
     Process *process = (Process *) memory_request->head->content;
 
     process->state = READY;
-    List__append(kernel->proc_table, (void *)process);
+    List__append(kernel->pcb, (void *)process);
 
     // TODO: Add process to Scheduler
 
@@ -67,7 +56,7 @@ Segment *Memory__create_segment(Process *process) {
 Segment *Memory__fetch_segment(int seg_id) {
     Segment *temp;
 
-    for (Node *aux = kernel->seg_table->seg_list->head; aux != NULL ; aux = aux->next) {
+    for (Node *aux = kernel->segment_table->head; aux != NULL ; aux = aux->next) {
         temp = (Segment *) aux->content;
         if (temp->seg_id == seg_id)
             return temp;
@@ -109,7 +98,7 @@ int Memory__swap_out(Segment *segment) {
     Segment *seg_aux;
     Page *page_aux;
 
-    for (Node *s = kernel->seg_table->seg_list->head; s != NULL ; s = s->next) {
+    for (Node *s = kernel->segment_table->head; s != NULL ; s = s->next) {
         seg_aux = (Segment *) s->content;
 
         for (Node *p = seg_aux->pages->head; p != NULL ; p = p->next) {

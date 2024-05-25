@@ -20,9 +20,10 @@ typedef enum {
 /// Kernel struct
 typedef struct {
     int proc_id_counter;
-    List *proc_table;
-    List *sem_table;
-    SegmentTable *seg_table;
+    long remaining_memory;
+    List *pcb;
+    List *semaph_table;
+    List *segment_table;
 } Kernel;
 
 /// Export kernel to other files

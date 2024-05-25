@@ -28,7 +28,7 @@ void Semaph__read_semaphores(char *buffer) {
     for (int i = 0; i <= num_sem; i += 2) {
         if(Semaph__semaphore_search(buffer[i]) == NULL){
             sem = Semaph__semaphore_init(buffer[i], 1);
-            List__append(kernel->sem_table, (void*)sem);
+            List__append(kernel->semaph_table, (void*)sem);
         }
     }
 }
@@ -37,7 +37,7 @@ void Semaph__read_semaphores(char *buffer) {
 /// \param name Semaphore name
 /// \return NULL or Semaphore
 Semaphore *Semaph__semaphore_search(char name) {
-    Node *aux = kernel->sem_table->head;
+    Node *aux = kernel->semaph_table->head;
     Semaphore *sem;
 
     while(aux != NULL){

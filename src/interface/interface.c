@@ -208,7 +208,7 @@ void Interface__update_kernel_window() {
         sem_wait(&kernel_interface->mutex);
 
         usleep(SLEEP_TIME);
-        mvwprintw(kernel_interface->subwindow, 1, 1, "Remaining Memory: %d bytes.", kernel->seg_table->remaining_memory);
+        mvwprintw(kernel_interface->subwindow, 1, 1, "Remaining Memory: %ld bytes.", kernel->remaining_memory);
 
         usleep(SLEEP_TIME);
         Interface__kernel_semaphores();
@@ -222,7 +222,7 @@ void Interface__kernel_semaphores() {
     char semaphores[BUFFER_SIZE] = "";
     char sem[6] = "x(y) ";
 
-    for (Node *aux = kernel->sem_table->head; aux != NULL ; aux = aux->next) {
+    for (Node *aux = kernel->semaph_table->head; aux != NULL ; aux = aux->next) {
         sem[0] = ((Semaphore *) aux->content)->name;
         sem[2] = ((Semaphore *) aux->content)->val + '0';
         strcat(semaphores, sem);
@@ -251,7 +251,7 @@ void Interface__update_memory_window() {
 
         usleep(SLEEP_TIME);
 
-        for (Node *aux = kernel->seg_table->seg_list->head; aux != NULL ; aux = aux->next) {
+        for (Node *aux = kernel->segment_table->head; aux != NULL ; aux = aux->next) {
             segment = (Segment *) aux->content;
 
             sprintf(output, "Seg Id: %d, Seg Size: %d Kb, Num Pages: %d.", segment->seg_id,
@@ -284,7 +284,7 @@ void Interface__update_process_window() {
 
         usleep(SLEEP_TIME);
 
-        for (Node *aux = kernel->proc_table->head; aux != NULL ; aux = aux->next) {
+        for (Node *aux = kernel->pcb->head; aux != NULL ; aux = aux->next) {
             process = (Process *) aux->content;
 
             sprintf(output, "PID: %d, Name: %s, State: %s, Seg Id: %d, Priority: %d.",
