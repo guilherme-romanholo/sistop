@@ -157,23 +157,25 @@ void Interface__update_kernel_window() {
         sem_wait(&kernel_interface->mutex);
 
         usleep(SLEEP_TIME);
-
         mvwprintw(kernel_interface->subwindow, 1, 1, "Remaining Memory: %d bytes.", kernel->seg_table->remaining_memory);
 
         usleep(SLEEP_TIME);
-
-        char semaphores[BUFFER_SIZE] = "";
-        char sem[6] = "x(y) ";
-
-        for (Node *aux = kernel->sem_table->head; aux != NULL ; aux = aux->next) {
-            sem[0] = ((Semaphore *) aux->content)->name;
-            sem[2] = ((Semaphore *) aux->content)->val + '0';
-            strcat(semaphores, sem);
-        }
-        mvwprintw(kernel_interface->subwindow, 2, 1, "Semaphores: %s", semaphores);
+        Interface__kernel_semaphores();
 
         wrefresh(kernel_interface->subwindow);
     }
+}
+
+void Interface__kernel_semaphores() {
+    char semaphores[BUFFER_SIZE] = "";
+    char sem[6] = "x(y) ";
+
+    for (Node *aux = kernel->sem_table->head; aux != NULL ; aux = aux->next) {
+        sem[0] = ((Semaphore *) aux->content)->name;
+        sem[2] = ((Semaphore *) aux->content)->val + '0';
+        strcat(semaphores, sem);
+    }
+    mvwprintw(kernel_interface->subwindow, 2, 1, "Semaphores: %s", semaphores);
 }
 
 /*

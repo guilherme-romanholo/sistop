@@ -29,6 +29,7 @@ void Interface__init();
 Interface *Interface__create_window(int height, int width, int starty, int startx, char *title, int scroll);
 void Interface__input_menu(char *input);
 void Interface__update_kernel_window();
+void Interface__kernel_semaphores();
 void Interface__update_memory_window();
 
 #endif //SISTOP_INTERFACE_H
