@@ -9,6 +9,8 @@ void Scheduler__create(Scheduler *scheduler) {
     scheduler->quantum = 5000;
 }
 
+// TODO: Set usage bit & dirty bit = 1
+
 /*
 int exec_process(Process *process){
     int quantum = 5000/process->priority;

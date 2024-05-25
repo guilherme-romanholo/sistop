@@ -17,20 +17,20 @@ SegmentTable *Memory__create_segment_table() {
 
 /// Make a memory request to the process
 /// \param memory_request Process that make the request
-/// \param seg_table Kernel segment table
-void Memory__req_load_memory(List *memory_request, SegmentTable *seg_table) {
+void Memory__req_load_memory(List *memory_request) {
     Process *process = (Process *) memory_request->head->content;
+    Segment *segment = Memory__create_segment(process);
     List *instructions = (List *) memory_request->tail->content;
 
-    Segment *segment = Memory__create_segment(process);
     Memory__create_pages(segment, instructions);
 
-    int remaining = seg_table->remaining_memory - process->segment_size;
-    seg_table->remaining_memory = (remaining > 0) ? remaining : 0;
+    int remaining = kernel->seg_table->remaining_memory - process->segment_size;
+    kernel->seg_table->remaining_memory = (remaining > 0) ? remaining : 0;
 
-    // TODO: Add Swap
+    if (remaining < 0)
+        kernel->seg_table->remaining_memory += Memory__swap_out(segment);
 
-    List__append(seg_table->seg_list, (void *)segment);
+    List__append(kernel->seg_table->seg_list, (void *)segment);
 }
 
 /// Finalize memory creation
@@ -89,6 +89,7 @@ void Memory__create_pages(Segment *segment, List *instructions) {
         Page *page = malloc(sizeof(Page));
         page->page_size = PAGE_SIZE;
         page->page_id = i;
+        page->used_bit = 0;
         page->instructions = List__create();
 
         qtd_instr = 0;
@@ -101,4 +102,28 @@ void Memory__create_pages(Segment *segment, List *instructions) {
 
         List__append(segment->pages, (void *) page);
     }
+}
+
+int Memory__swap_out(Segment *segment) {
+    int free_mem = 0;
+    Segment *seg_aux;
+    Page *page_aux;
+
+    for (Node *s = kernel->seg_table->seg_list->head; s != NULL ; s = s->next) {
+        seg_aux = (Segment *) s->content;
+
+        for (Node *p = seg_aux->pages->head; p != NULL ; p = p->next) {
+            page_aux = (Page *) p->content;
+
+            if (page_aux->used_bit == 1)
+                page_aux->used_bit = 0;
+            else
+                free_mem += page_aux->page_size;
+
+            if (free_mem >= segment->seg_size)
+                break;
+        }
+    }
+
+    return free_mem;
 }
