@@ -7,6 +7,7 @@
 
 Interface *menu_interface;
 Interface *kernel_interface;
+Interface *memory_interface;
 
 /// Initialize project interface
 void Interface__init() {
@@ -25,24 +26,35 @@ void Interface__init() {
             height / 4,
             width / 2,
             0, 0,
-            "MENU");
+            "MENU", FALSE);
 
     // Create kernel interface
     kernel_interface = Interface__create_window(
             height / 4,
             width / 2,
             height / 4, 0,
-            "KERNEL");
+            "KERNEL", FALSE);
 
+    // Create memory interface
+    memory_interface = Interface__create_window(
+            (height / 2) + 1,
+            width / 2,
+            (height / 2) - 1, 0,
+            "MEMORY",TRUE);
+
+    // Init interfaces semaphores
     sem_init(&kernel_interface->mutex, 0, 1);
+    sem_init(&memory_interface->mutex, 0, 0);
 
-    pthread_attr_t thread_attr;
-    pthread_attr_init(&thread_attr);
-    pthread_attr_setscope(&thread_attr, PTHREAD_SCOPE_SYSTEM);
-
+    // Init interfaces threads
     pthread_create(&kernel_interface->thread,
                    NULL,
-                   (void *)Interface__update_kernel_window,
+                   (void *) Interface__update_kernel_window,
+                   NULL);
+
+    pthread_create(&memory_interface->thread,
+                   NULL,
+                   (void *) Interface__update_memory_window,
                    NULL);
 
     while (TRUE) {
@@ -62,6 +74,12 @@ void Interface__init() {
     endwin();
 }
 
+/*
+ * ###################
+ * #     GENERAL     #
+ * ###################
+ * */
+
 /// Create an interface component
 /// \param height Window height
 /// \param width Window width
@@ -69,14 +87,15 @@ void Interface__init() {
 /// \param startx Window X start position
 /// \param title Window title
 /// \return Interface component
-Interface *Interface__create_window(int height, int width, int starty, int startx, char *title) {
+Interface *Interface__create_window(int height, int width, int starty, int startx, char *title, int scroll) {
     Interface *interface = malloc(sizeof(Interface));
 
     // Initialize values
     interface->window = newwin(height, width, starty, startx);
     interface->subwindow = derwin(interface->window, height - 2, width - 2, 1, 1);
     interface->max_lines = height - 2;
-    interface->curr_line = starty;
+    interface->curr_line = 0;
+    scrollok(interface->subwindow, scroll);
 
     // Create border with title
     box(interface->window, 0, 0);
@@ -87,9 +106,20 @@ Interface *Interface__create_window(int height, int width, int starty, int start
 }
 
 void Interface__add_line(Interface *interface, int width, const char *text) {
+    if (interface->curr_line >= interface->max_lines) {
+        wscrl(interface->subwindow, 1);
+        interface->curr_line--;
+    }
+
     mvwprintw(interface->subwindow, interface->curr_line++, width, "%s", text);
     wrefresh(interface->subwindow);
 }
+
+/*
+ * ##################
+ * #      MENU      #
+ * ##################
+ * */
 
 void Interface__input_menu(char *input) {
     int width;
@@ -116,13 +146,64 @@ void Interface__input_menu(char *input) {
     noecho();
 }
 
+/*
+ * ##################
+ * #     KERNEL     #
+ * ##################
+ * */
+
 void Interface__update_kernel_window() {
     while (TRUE) {
         sem_wait(&kernel_interface->mutex);
 
-        usleep(1);
+        usleep(10);
 
-        mvwprintw(kernel_interface->window, 1, 1, "Remaining Memory: %d bytes.", kernel->seg_table->remaining_memory);
-        wrefresh(kernel_interface->window);
+        mvwprintw(kernel_interface->subwindow, 1, 1, "Remaining Memory: %d bytes.", kernel->seg_table->remaining_memory);
+
+        usleep(10);
+
+        char semaphores[BUFFER_SIZE] = "";
+        char sem[6] = "x(y) ";
+
+        for (Node *aux = kernel->sem_table->head; aux != NULL ; aux = aux->next) {
+            sem[0] = ((Semaphore *) aux->content)->name;
+            sem[2] = ((Semaphore *) aux->content)->val + '0';
+            strcat(semaphores, sem);
+        }
+        mvwprintw(kernel_interface->subwindow, 2, 1, "Semaphores: %s", semaphores);
+
+        wrefresh(kernel_interface->subwindow);
+    }
+}
+
+/*
+ * ##################
+ * #     MEMORY     #
+ * ##################
+ * */
+
+void Interface__update_memory_window() {
+    while (TRUE) {
+        sem_wait(&memory_interface->mutex);
+
+        Segment *segment;
+        char output[BUFFER_SIZE];
+
+        usleep(20);
+
+        werase(memory_interface->subwindow);
+
+        for (Node *aux = kernel->seg_table->seg_list->head; aux != NULL ; aux = aux->next) {
+            segment = (Segment *) aux->content;
+
+            sprintf(output, "Seg Id: %d, Seg Size: %d, Num Pages: %d.", segment->seg_id,
+                    segment->seg_size, segment->pages->size);
+
+            usleep(20);
+
+            Interface__add_line(memory_interface, 0, output);
+        }
+
+        memory_interface->curr_line = 0;
     }
 }
