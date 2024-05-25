@@ -34,7 +34,7 @@ void Kernel__syscall(Syscall call, void *arg) {
         case INTERRUPT_PROCESS:
             break;
         case REQ_LOAD_MEMORY:
-            Memory__req_load_memory((List *)arg, kernel->seg_table);
+            Memory__req_load_memory((List *)arg);
             Kernel__interrupt(FIN_LOAD_MEMORY, (List *)arg);
             break;
     }
