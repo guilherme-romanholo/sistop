@@ -2,6 +2,7 @@
 #define SISTOP_INTERFACE_H
 
 #define INPUT_SIZE 10
+#define SLEEP_TIME 20
 
 #include <ncurses.h>
 #include <semaphore.h>

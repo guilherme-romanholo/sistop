@@ -156,11 +156,11 @@ void Interface__update_kernel_window() {
     while (TRUE) {
         sem_wait(&kernel_interface->mutex);
 
-        usleep(10);
+        usleep(SLEEP_TIME);
 
         mvwprintw(kernel_interface->subwindow, 1, 1, "Remaining Memory: %d bytes.", kernel->seg_table->remaining_memory);
 
-        usleep(10);
+        usleep(SLEEP_TIME);
 
         char semaphores[BUFFER_SIZE] = "";
         char sem[6] = "x(y) ";
@@ -189,7 +189,7 @@ void Interface__update_memory_window() {
         Segment *segment;
         char output[BUFFER_SIZE];
 
-        usleep(20);
+        usleep(SLEEP_TIME);
 
         werase(memory_interface->subwindow);
 
@@ -199,7 +199,7 @@ void Interface__update_memory_window() {
             sprintf(output, "Seg Id: %d, Seg Size: %d, Num Pages: %d.", segment->seg_id,
                     segment->seg_size, segment->pages->size);
 
-            usleep(20);
+            usleep(SLEEP_TIME);
 
             Interface__add_line(memory_interface, 0, output);
         }
