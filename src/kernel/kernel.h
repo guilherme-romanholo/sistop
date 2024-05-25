@@ -3,6 +3,7 @@
 
 #include "../memory/memory.h"
 #include "../semaph/semaph.h"
+#include "../scheduler/scheduler.h"
 
 /// Syscall enumeration
 typedef enum {
@@ -21,6 +22,7 @@ typedef enum {
 typedef struct {
     int proc_id_counter;
     long remaining_memory;
+    Scheduler *scheduler;
     List *pcb;
     List *semaph_table;
     List *segment_table;

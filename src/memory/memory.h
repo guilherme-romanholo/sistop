@@ -23,6 +23,7 @@ typedef struct {
     int page_id;
     int page_size;
     int used_bit;
+    int num_instructions_page;
     List *instructions; // (Instruction *)
 } Page;
 
@@ -36,6 +37,7 @@ typedef struct {
 Segment *Memory__create_segment(Process *);
 Segment *Memory__fetch_segment(int);
 void Memory__create_pages(Segment *, List *);
+Node *Memory__fetch_page(Segment *, int);
 void Memory__req_load_memory(List *);
 void Memory__fin_load_memory(List *);
 int Memory__swap_out(Segment *);

@@ -16,7 +16,7 @@ typedef struct {
 Semaphore *Semaph__semaphore_init(char, const int);
 void Semaph__read_semaphores(char *);
 Semaphore *Semaph__semaphore_search(char);
-void Semaph__semaphore_P(Semaphore *, Process *);
-void Semaph__semaphore_V(Semaphore *, Process *);
+int Semaph__semaphore_P(Semaphore *, Process *);
+void Semaph__semaphore_V(Semaphore *);
 
 #endif //SISTOP_SEMAPH_H

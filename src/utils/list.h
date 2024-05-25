@@ -18,7 +18,7 @@ typedef struct list {
 List* List__create();
 void List__append(List *, void *);
 Node* Node__create(void *);
-void *List__remove_head(List *list);
+Node *List__remove_head(List *list);
 void List__remove_node(List *list, Node *node);
 Node *List__remove_tail(List *list);
 void List__destroy(List *list);

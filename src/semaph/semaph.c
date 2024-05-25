@@ -56,32 +56,35 @@ Semaphore *Semaph__semaphore_search(char name) {
 /// Semaphore wait
 /// \param sem Required semaphore
 /// \param proc Process that require semaphore
-void Semaph__semaphore_P(Semaphore *sem, Process *proc) {
+int Semaph__semaphore_P(Semaphore *sem, Process *process) {
     int blocked = 0;
 
     sem_wait(&sem->mutex);
     sem->val--;
 
     if (sem->val < 0) {
-        List__append(sem->waiters, (void *) proc);
-        // TODO: Sleep function?
+        List__append(sem->waiters, (void *) process);
+        //Chama a função para bloquear o processo que está rodando e pediu o semáforo
+        Scheduler__schedule_process(process, kernel->scheduler, SEMAPH_BLOCKED);
         blocked = 1;
     }
 
     sem_post(&sem->mutex);
+
+    return blocked;
 }
 
 /// Semaphore wait
 /// \param sem Required semaphore
 /// \param proc Process that require semaphore
-void Semaph__semaphore_V(Semaphore *sem, Process *process) {
+void Semaph__semaphore_V(Semaphore *sem) {
     sem_wait(&sem->mutex);
     sem->val++;
 
     if (sem->val <= 0) {
-        Process *proc = (Process *) List__remove_head(sem->waiters);
+        Process *process = (Process *)List__remove_head(sem->waiters);
 
-        //TODO: Chama a função para tirar o processo do estado de bloqueado
+        Scheduler__unblock_process(kernel->scheduler, process);
     }
 
     sem_post(&sem->mutex);

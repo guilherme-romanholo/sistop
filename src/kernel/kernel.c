@@ -1,5 +1,6 @@
 #include "kernel.h"
 #include "../utils/list.h"
+#include "../scheduler/scheduler.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -20,6 +21,7 @@ void Kernel__create() {
     kernel->segment_table = List__create();
     kernel->semaph_table = List__create();
     kernel->pcb = List__create();
+    kernel->scheduler = Scheduler__create();
 }
 
 /// Make a syscall
