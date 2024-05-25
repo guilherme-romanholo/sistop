@@ -11,35 +11,32 @@ void Process__create(const char *file) {
     FILE *fp = fopen(file, "r");
     Process *process = malloc(sizeof(Process));
 
-    // Initialize process
     process->pid = kernel->proc_id_counter++;
     process->state = NEW;
     process->pc = 0;
 
-    // Read data
     fgets(buffer, BUFFER_SIZE, fp);
     process->name = strdup(buffer);
+    process->name[strlen(process->name) - 1] = '\0';
+
     fgets(buffer, BUFFER_SIZE, fp);
     process->segment_id = atoi(buffer);
+
     fgets(buffer, BUFFER_SIZE, fp);
     process->priority = atoi(buffer);
+
     fgets(buffer, BUFFER_SIZE, fp);
     process->segment_size = atoi(buffer) * KBYTE;
 
-    // Read semaphores to kernel table
-    // TODO: Remover não dar append em semaforos já existentes
     fgets(buffer, BUFFER_SIZE, fp);
     Semaph__read_semaphores(buffer);
 
-    // Read one blank line
     fgets(buffer, BUFFER_SIZE, fp);
 
-    // Read instructions
     List *instructions = Process__read_instructions(fp, buffer);
 
     fclose(fp);
 
-    // Make a list for memory load request
     List *memory_request = List__create();
     List__append(memory_request, (void *) process);
     List__append(memory_request, (void *) instructions);
@@ -47,12 +44,14 @@ void Process__create(const char *file) {
     Kernel__syscall(REQ_LOAD_MEMORY, (void *) memory_request);
 }
 
+/// Read instruction from process file
+/// \param fp File pointer to synthetic process
+/// \param buffer Buffer to read file
+/// \return List of instructions
 List *Process__read_instructions(FILE *fp, char *buffer) {
-    // Create instruction list
     List *instr_list = List__create();
     Instruction *instruction;
 
-    // Leitura de todas as instruções do arquivo
     while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
         instruction = Process__parse_instruction(buffer);
         List__append(instr_list, instruction);
@@ -61,25 +60,29 @@ List *Process__read_instructions(FILE *fp, char *buffer) {
     return instr_list;
 }
 
+/// Parse string instructions to the Instruction type
+/// \param content String instruction from file
+/// \return Parsed instructions
 Instruction *Process__parse_instruction(char *content) {
     Instruction *instruction = malloc(sizeof(Instruction));
-    char *delimiter = " "; // Assuming this is the delimiter between operation and value
+    char *delimiter = " ";
     char *op = strtok(content, delimiter);
     char *value;
 
     if (op) {
-        // Assign operation
         Process__cast_opcode(instruction, op);
 
-        // Extract value using strtok again
         value = strtok(NULL, delimiter);
         if (value)
-            instruction->value = atoi(value); // Convert value to integer
+            instruction->value = atoi(value);
     }
 
     return instruction;
 }
 
+/// Cast process string opcode to integer
+/// \param instr Instruction to insert opcode
+/// \param opcode String opcode
 void Process__cast_opcode(Instruction *instr, char *opcode) {
     if (!strcmp("exec", opcode)) {
         instr->opcode = EXEC;

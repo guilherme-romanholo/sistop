@@ -8,6 +8,8 @@
 Interface *menu_interface;
 Interface *kernel_interface;
 Interface *memory_interface;
+Interface *process_interface;
+Interface *scheduler_interface;
 
 /// Initialize project interface
 void Interface__init() {
@@ -35,6 +37,8 @@ void Interface__init() {
             height / 4, 0,
             "KERNEL", FALSE);
 
+    usleep(SLEEP_TIME);
+
     // Create memory interface
     memory_interface = Interface__create_window(
             (height / 2) + 1,
@@ -42,9 +46,26 @@ void Interface__init() {
             (height / 2) - 1, 0,
             "MEMORY",TRUE);
 
+    // Create process interface
+    process_interface = Interface__create_window(
+            (height / 2) - 1,
+            width / 2,
+            0, (width / 2),
+            "PROCESS",TRUE);
+
+    usleep(SLEEP_TIME);
+
+    // Create scheduler interface
+    scheduler_interface = Interface__create_window(
+            (height / 2) + 1,
+            width / 2,
+            (height / 2) - 1, (width / 2),
+            "SCHEDULER",TRUE);
+
     // Init interfaces semaphores
     sem_init(&kernel_interface->mutex, 0, 1);
     sem_init(&memory_interface->mutex, 0, 0);
+    sem_init(&process_interface->mutex, 0, 0);
 
     // Init interfaces threads
     pthread_create(&kernel_interface->thread,
@@ -55,6 +76,11 @@ void Interface__init() {
     pthread_create(&memory_interface->thread,
                    NULL,
                    (void *) Interface__update_memory_window,
+                   NULL);
+
+    pthread_create(&process_interface->thread,
+                   NULL,
+                   (void *) Interface__update_process_window,
                    NULL);
 
     while (TRUE) {
@@ -69,7 +95,17 @@ void Interface__init() {
         Process__create(path);
     }
 
-    // TODO: Free interface
+    // Free semaphores
+    sem_destroy(&kernel_interface->mutex);
+    sem_destroy(&memory_interface->mutex);
+    sem_destroy(&process_interface->mutex);
+
+    // Free interface
+    Interface__destroy(menu_interface);
+    Interface__destroy(kernel_interface);
+    Interface__destroy(memory_interface);
+    Interface__destroy(process_interface);
+    Interface__destroy(scheduler_interface);
 
     endwin();
 }
@@ -105,6 +141,18 @@ Interface *Interface__create_window(int height, int width, int starty, int start
     return interface;
 }
 
+/// Free an interface component
+/// \param interface Interface component
+void Interface__destroy(Interface *interface) {
+    delwin(interface->subwindow);
+    delwin(interface->window);
+    free(interface);
+}
+
+/// Add line in interface subwindow
+/// \param interface Interface
+/// \param width X position
+/// \param text Text to be inserted
 void Interface__add_line(Interface *interface, int width, const char *text) {
     if (interface->curr_line >= interface->max_lines) {
         wscrl(interface->subwindow, 1);
@@ -121,6 +169,8 @@ void Interface__add_line(Interface *interface, int width, const char *text) {
  * ##################
  * */
 
+/// Input process name in menu
+/// \param input Input value
 void Interface__input_menu(char *input) {
     int width;
 
@@ -152,28 +202,33 @@ void Interface__input_menu(char *input) {
  * ##################
  * */
 
+/// Update the kernel window
 void Interface__update_kernel_window() {
     while (TRUE) {
         sem_wait(&kernel_interface->mutex);
 
         usleep(SLEEP_TIME);
-
         mvwprintw(kernel_interface->subwindow, 1, 1, "Remaining Memory: %d bytes.", kernel->seg_table->remaining_memory);
 
         usleep(SLEEP_TIME);
-
-        char semaphores[BUFFER_SIZE] = "";
-        char sem[6] = "x(y) ";
-
-        for (Node *aux = kernel->sem_table->head; aux != NULL ; aux = aux->next) {
-            sem[0] = ((Semaphore *) aux->content)->name;
-            sem[2] = ((Semaphore *) aux->content)->val + '0';
-            strcat(semaphores, sem);
-        }
-        mvwprintw(kernel_interface->subwindow, 2, 1, "Semaphores: %s", semaphores);
+        Interface__kernel_semaphores();
 
         wrefresh(kernel_interface->subwindow);
     }
+}
+
+/// Return formated semaphores to print in interface
+void Interface__kernel_semaphores() {
+    char semaphores[BUFFER_SIZE] = "";
+    char sem[6] = "x(y) ";
+
+    for (Node *aux = kernel->sem_table->head; aux != NULL ; aux = aux->next) {
+        sem[0] = ((Semaphore *) aux->content)->name;
+        sem[2] = ((Semaphore *) aux->content)->val + '0';
+        strcat(semaphores, sem);
+    }
+
+    mvwprintw(kernel_interface->subwindow, 2, 1, "Semaphores: %s", semaphores);
 }
 
 /*
@@ -182,6 +237,7 @@ void Interface__update_kernel_window() {
  * ##################
  * */
 
+/// Update memory window
 void Interface__update_memory_window() {
     while (TRUE) {
         sem_wait(&memory_interface->mutex);
@@ -193,11 +249,13 @@ void Interface__update_memory_window() {
 
         werase(memory_interface->subwindow);
 
+        usleep(SLEEP_TIME);
+
         for (Node *aux = kernel->seg_table->seg_list->head; aux != NULL ; aux = aux->next) {
             segment = (Segment *) aux->content;
 
-            sprintf(output, "Seg Id: %d, Seg Size: %d, Num Pages: %d.", segment->seg_id,
-                    segment->seg_size, segment->pages->size);
+            sprintf(output, "Seg Id: %d, Seg Size: %d Kb, Num Pages: %d.", segment->seg_id,
+                    segment->seg_size / KBYTE, segment->pages->size);
 
             usleep(SLEEP_TIME);
 
@@ -205,5 +263,59 @@ void Interface__update_memory_window() {
         }
 
         memory_interface->curr_line = 0;
+    }
+}
+
+/*
+ * ###################
+ * #     PROCESS     #
+ * ###################
+ * */
+
+/// Update process window
+void Interface__update_process_window() {
+    Process *process;
+    char output[BUFFER_SIZE];
+
+    while (TRUE) {
+        sem_wait(&process_interface->mutex);
+
+        werase(process_interface->subwindow);
+
+        usleep(SLEEP_TIME);
+
+        for (Node *aux = kernel->proc_table->head; aux != NULL ; aux = aux->next) {
+            process = (Process *) aux->content;
+
+            sprintf(output, "PID: %d, Name: %s, State: %s, Seg Id: %d, Priority: %d.",
+                    process->pid, process->name, Interface__cast_process_state(process->state),
+                    process->segment_id, process->priority);
+
+            usleep(SLEEP_TIME);
+
+            Interface__add_line(process_interface, 0, output);
+        }
+
+        process_interface->curr_line = 0;
+    }
+}
+
+/// Cast process int state to display string
+/// \param state Process int state
+/// \return String state
+char *Interface__cast_process_state(int state) {
+    switch (state) {
+        case NEW:
+            return "New";
+        case READY:
+            return "Ready";
+        case RUNNING:
+            return "Running";
+        case WAITING:
+            return "Waiting";
+        case TERMINATED:
+            return "Terminated";
+        default:
+            return "Error";
     }
 }

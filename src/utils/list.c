@@ -57,6 +57,9 @@ Node* Node__create(void *content) {
     return node;
 }
 
+/// Remove the first node from a list
+/// \param list List
+/// \return Node content
 void *List__remove_head(List *list) {
     Node *aux = list->head;
     void *content = list->head->content;
@@ -70,7 +73,6 @@ void *List__remove_head(List *list) {
 
         list->head = list->head->next;
 
-        //Libera o nó da lista
         aux->next = NULL;
         aux->prev = NULL;
         list->size--;
@@ -81,6 +83,9 @@ void *List__remove_head(List *list) {
     return content;
 }
 
+/// Remove node from list
+/// \param list List
+/// \param node Node to be removed
 void List__remove_node(List *list, Node *node) {
     if(node != NULL)
         return;
@@ -105,6 +110,9 @@ void List__remove_node(List *list, Node *node) {
     list->size--;
 }
 
+/// Remove the tail node from a list
+/// \param list List
+/// \return Tail Node
 Node *List__remove_tail(List *list) {
     Node *aux = list->tail;
 
@@ -116,7 +124,6 @@ Node *List__remove_tail(List *list) {
 
         list->tail = list->tail->prev;
 
-        //Libera o nó da lista
         aux->next = NULL;
         aux->prev = NULL;
         list->size--;
@@ -125,6 +132,8 @@ Node *List__remove_tail(List *list) {
     return aux;
 }
 
+/// Free the list
+/// \param list List
 void List__destroy(List *list){
     Node *aux = list->head;
 

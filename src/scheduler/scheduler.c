@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include "scheduler.h"
 
+/// Create scheduler
+/// \param scheduler Scheduler struct
 void Scheduler__create(Scheduler *scheduler) {
     scheduler->scheduled_proc = NULL;
     scheduler->blocked_queue = List__create();
     scheduler->quantum = 5000;
 }
+
+// TODO: Set usage bit & dirty bit = 1
 
 /*
 int exec_process(Process *process){
