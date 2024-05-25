@@ -1,36 +1,34 @@
 #ifndef SISTOP_INTERFACE_H
 #define SISTOP_INTERFACE_H
 
-#include "../memory/memory.h"
+#define INPUT_SIZE 10
+#define SLEEP_TIME 20
+
+#include <ncurses.h>
 #include <semaphore.h>
 #include <pthread.h>
-#include <ncurses.h>
 
 typedef struct {
-    WINDOW *window;     // Janela principal
-    WINDOW *subwindow;  // Sub-janela para o conteúdo com scroll
-    int max_lines;      // Número máximo de linhas antes de aplicar scroll
-    int current_line;   // Índice da próxima linha para adicionar conteúdo
-} Window;
+    // Windows
+    WINDOW *window;
+    WINDOW *subwindow;
 
-// ========== Interface ==========
-int Interface__create();
-void Interface__draw_window(Window *, const char *);
-Window *Interface__create_window(int, int, int, int, const char *, int,int );
-void Interface__add_line(Window *, const char *);
-void Interface__add_line_scroll(Window *, const char *);
+    // Lines
+    int max_lines;
+    int curr_line;
 
-// ========== Memory ==========
-void Interface__create_memory_ui(int height, int width);
+    // Threads
+    sem_t mutex;
+    pthread_t thread;
+} Interface;
 
-// ========== Menu ==========
-extern Window *menu_win;
-void Interface__create_menu_ui(int height, int width);
-void Interface__input_menu();
+extern Interface *kernel_interface;
+extern Interface *memory_interface;
 
-// ========== Kernel ==========
-extern sem_t kernel_ui_sem;
-void Interface__create_kernel_ui(int height, int width);
-void *Interface__update_kernel_ui();
+void Interface__init();
+Interface *Interface__create_window(int height, int width, int starty, int startx, char *title, int scroll);
+void Interface__input_menu(char *input);
+void Interface__update_kernel_window();
+void Interface__update_memory_window();
 
 #endif //SISTOP_INTERFACE_H

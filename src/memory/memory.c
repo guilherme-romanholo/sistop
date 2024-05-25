@@ -1,7 +1,8 @@
 #include "memory.h"
+#include "../kernel/kernel.h"
+#include "../interface/interface.h"
 #include <stdlib.h>
 #include <math.h>
-#include "../interface/interface.h"
 
 /// Create the kernel segment table
 /// \return Returns segment table to the kernel
@@ -34,6 +35,19 @@ void Memory__req_load_memory(List *memory_request, SegmentTable *seg_table) {
 
     // Append segment into kernel segment table
     List__append(seg_table->seg_list, (void *)segment);
+}
+
+void Memory__fin_load_memory(List *memory_request) {
+    Process *process = (Process *) memory_request->head->content;
+
+    process->state = READY;
+    List__append(kernel->proc_table, (void *)process);
+
+    // TODO: Add process to Scheduler
+
+    // Update semaphores window
+    sem_post(&kernel_interface->mutex);
+    sem_post(&memory_interface->mutex);
 }
 
 /// Create a segment for the process

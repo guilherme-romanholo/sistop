@@ -1,5 +1,4 @@
 #include "kernel.h"
-#include "../interface/interface.h"
 #include "../utils/list.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,16 +46,7 @@ void Kernel__syscall(Syscall call, void *arg) {
 void Kernel__interrupt(Interruption interruption, void *arg) {
     switch (interruption) {
         case FIN_LOAD_MEMORY:
-            sem_post(&kernel_ui_sem);
-
-            List *memory_request = (List *) arg;
-            Process *process = (Process *) memory_request->head->content;
-
-            List__append(kernel->proc_table, process);
-
-            // TODO: Add process to Scheduler
-            // Process *process = ((Process *)arg);
-            // process->state = READY;
+            Memory__fin_load_memory((List *) arg);
             break;
     }
 }

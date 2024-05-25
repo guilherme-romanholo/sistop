@@ -4,6 +4,6 @@
 int main(int argc, char *argv[])
 {
     Kernel__create();
-    Interface__create();
+    Interface__init();
     return 0;
 }
