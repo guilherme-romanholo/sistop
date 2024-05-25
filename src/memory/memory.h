@@ -40,6 +40,7 @@ typedef struct {
 
 SegmentTable *Memory__create_segment_table();
 Segment *Memory__create_segment(Process *);
+Segment *Memory__fetch_segment(int);
 void Memory__create_pages(Segment *, List *);
 void Memory__req_load_memory(List *, SegmentTable *);
 void Memory__fin_load_memory(List *);

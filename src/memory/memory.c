@@ -19,24 +19,22 @@ SegmentTable *Memory__create_segment_table() {
 /// \param memory_request Process that make the request
 /// \param seg_table Kernel segment table
 void Memory__req_load_memory(List *memory_request, SegmentTable *seg_table) {
-    // Cast process and instructions
     Process *process = (Process *) memory_request->head->content;
     List *instructions = (List *) memory_request->tail->content;
 
-    // Create segment and pages
     Segment *segment = Memory__create_segment(process);
     Memory__create_pages(segment, instructions);
 
-    // Updated remaining memory
     int remaining = seg_table->remaining_memory - process->segment_size;
     seg_table->remaining_memory = (remaining > 0) ? remaining : 0;
 
     // TODO: Add Swap
 
-    // Append segment into kernel segment table
     List__append(seg_table->seg_list, (void *)segment);
 }
 
+/// Finalize memory creation
+/// \param memory_request Process of memory request
 void Memory__fin_load_memory(List *memory_request) {
     Process *process = (Process *) memory_request->head->content;
 
@@ -45,9 +43,9 @@ void Memory__fin_load_memory(List *memory_request) {
 
     // TODO: Add process to Scheduler
 
-    // Update semaphores window
     sem_post(&kernel_interface->mutex);
     sem_post(&memory_interface->mutex);
+    sem_post(&process_interface->mutex);
 }
 
 /// Create a segment for the process
@@ -63,6 +61,24 @@ Segment *Memory__create_segment(Process *process) {
     return segment;
 }
 
+/// Fetch segment in segment kernel table by id
+/// \param seg_id Id of segment
+/// \return NULL or Fetched Segment
+Segment *Memory__fetch_segment(int seg_id) {
+    Segment *temp;
+
+    for (Node *aux = kernel->seg_table->seg_list->head; aux != NULL ; aux = aux->next) {
+        temp = (Segment *) aux->content;
+        if (temp->seg_id == seg_id)
+            return temp;
+    }
+
+    return NULL;
+}
+
+/// Create pages with instructions for the new process
+/// \param segment
+/// \param instructions
 void Memory__create_pages(Segment *segment, List *instructions) {
     int num_pages, instructions_per_page, qtd_instr;
 

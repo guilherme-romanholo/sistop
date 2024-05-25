@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "scheduler.h"
 
+/// Create scheduler
+/// \param scheduler Scheduler struct
 void Scheduler__create(Scheduler *scheduler) {
     scheduler->scheduled_proc = NULL;
     scheduler->blocked_queue = List__create();
