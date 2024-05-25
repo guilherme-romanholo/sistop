@@ -92,7 +92,7 @@ void Interface__init() {
             break;
 
         strcat(path, input);
-        Process__create(path);
+        Kernel__syscall(CREATE_PROCESS, (void *) path);
     }
 
     // Free semaphores
