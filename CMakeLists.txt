@@ -30,3 +30,10 @@ add_executable(sistop
 
 # Link libraries
 target_link_libraries(sistop ${CURSES_LIBRARIES} form menu m pthread)
+
+add_custom_target(run
+        COMMAND sistop
+        DEPENDS sistop
+        WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
+)
+
