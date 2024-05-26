@@ -107,8 +107,8 @@ void Process__cast_opcode(Instruction *instr, char *opcode) {
 /// \param process Process to be finished
 void Process__finish(Process *process){
     Segment *seg_aux;
-    Page *page_aux;
-    Node *s, *p;
+    Process *proc_aux;
+    Node *s;
 
     // Search the segment from process in segment_table 
     for (s = kernel->segment_table->head; s != NULL ; s = s->next) {
@@ -121,13 +121,20 @@ void Process__finish(Process *process){
     // Clears segment from memory
     kernel->remaining_memory += seg_aux->seg_size;
 
-    for (Node *p = seg_aux->pages->head; p != NULL ; p = p->next) {
-        page_aux = (Page *) p->content;
-        free (page_aux);
+    for (Node *p = seg_aux->pages->head; p != NULL ; p = p->next) 
+        free (p);
+
+    free(s);
+
+    // Search the segment from process in segment_table 
+    for (s = kernel->pcb->head; s != NULL ; s = s->next) {
+        proc_aux = (Process *) s->content;
+
+        if(proc_aux->pid == process->pid)
+            break;
     }
 
-    free(seg_aux);
-
+    free(s);
     free(process);
 }
 
