@@ -1,17 +1,13 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include "../kernel/kernel.h"
-#include "../process/process.h"
-#include "../semaph/semaph.h"
 #include "scheduler.h"
 
 Scheduler* Scheduler__create() {
     Scheduler* scheduler = malloc(sizeof(Scheduler));
 
     scheduler->scheduled_proc = NULL;
-    scheduler->scheduler_queue = List__create();
     scheduler->scheduler_queue = List__create();
     scheduler->blocked_queue = List__create();
 
@@ -23,30 +19,21 @@ void Scheduler__schedule_process(Process *process, Scheduler *scheduler, Sched_F
     // a cabeça da lista para executar, depois de executar (ou interromper por algum motivo)
     // Re-insere ele na lista de prontos e executa a cabeça de novo
 
-    if(flag == SCHEDULE_PROCESS){
-
-        scheduler->quantum = 5000/process->priority;
-        scheduler->scheduled_proc = (Process *)List__remove_head(scheduler->scheduler_queue);
+    if (flag == SCHEDULE_PROCESS) {
+        scheduler->quantum = 5000 / process->priority;
+        scheduler->scheduled_proc = (Process *) List__remove_head(scheduler->scheduler_queue);
         process->state = RUNNING;
-
-    }else if(flag == PROCESS_END){
-
+    } else if (flag == PROCESS_END) {
         scheduler->scheduled_proc = NULL;
         process->state = TERMINATED;
-
-
-    }else if(flag == QUANTUM_END && flag == IO_REQUESTED){
-
+    } else if (flag == QUANTUM_END || flag == IO_REQUESTED){
         process->state = READY;
         List__append(scheduler->scheduler_queue, (void *)process);
         scheduler->scheduler_queue = NULL;
-
-    }else if(flag == SEMAPH_BLOCKED){
-
+    } else if (flag == SEMAPH_BLOCKED){
         process->state = WAITING;
         List__append(scheduler->blocked_queue,(void *)process);
         scheduler->scheduler_queue = NULL;
-
     }
 
 }
@@ -67,7 +54,6 @@ void Scheduler__unblock_process(Scheduler *scheduler, Process *process){
 
     //Append the process in the scheduler queue again
     List__append(scheduler->scheduler_queue,(void *)process);
-
 }
 
 void Scheduler__cpu_run(){
@@ -75,34 +61,28 @@ void Scheduler__cpu_run(){
     Page *page;
     Sched_Flags flag;
 
-    while(!kernel);
+    while (!kernel);
     
-
-    while(1){
-        
-
-        if(kernel->scheduler->scheduled_proc == NULL){
-            if(kernel->pcb->size != 0){
+    while (1) {
+        if (kernel->scheduler->scheduled_proc == NULL){
+            if (kernel->pcb->size != 0) {
                 Process* process = (Process *)List__remove_head(kernel->scheduler->scheduler_queue);
                 Scheduler__schedule_process(process,kernel->scheduler, SCHEDULE_PROCESS);
             }
-        }else{
+        } else {
             segment = Memory__fetch_segment(kernel->scheduler->scheduled_proc->segment_id);
             page = (Page *)segment->pages->head;
             
             flag = exec_process(segment, kernel->scheduler->scheduled_proc, kernel->scheduler->quantum, page->num_instructions_page);
 
             Scheduler__schedule_process(kernel->scheduler->scheduled_proc, kernel->scheduler, flag);
-
         }
-
-
     }
 }
 
 Sched_Flags exec_process(Segment *segment, Process *process, int quantum, int num_instructions_page){
     int blocked = 0;
-    int page_id = ceil((double)process->pc/num_instructions_page);
+    int page_id = ceil((double) process->pc/num_instructions_page);
 
     Sched_Flags flag;
 

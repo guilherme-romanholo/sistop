@@ -60,7 +60,7 @@ Node* Node__create(void *content) {
 /// Remove the first node from a list
 /// \param list List
 /// \return Node content
-Node *List__remove_head(List *list) {
+void *List__remove_head(List *list) {
     Node *aux = list->head;
     void *content = list->head->content;
 
@@ -78,7 +78,9 @@ Node *List__remove_head(List *list) {
         list->size--;
     }
 
-    return aux;
+    free(aux);
+
+    return content;
 }
 
 /// Remove node from list
