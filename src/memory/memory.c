@@ -109,6 +109,17 @@ Node *Memory__fetch_page(Segment *seg, int page_id) {
     return NULL;
 }
 
+Node *Memory__fetch_instruction(Page *page, int num_instruction) {
+    Node *aux = page->instructions->head;
+    Instruction *temp;
+
+    for (int i = num_instruction; i > 0; i--){
+        aux = aux->next;
+    }
+
+    return aux;
+}
+
 int Memory__swap_out(Segment *segment) {
     int free_mem = 0;
     Segment *seg_aux;

@@ -1,6 +1,7 @@
 #include "kernel/kernel.h"
 #include "interface/interface.h"
 #include "scheduler/scheduler.h"
+#include "process/process.h"
 int main(int argc, char *argv[])
 {
     pthread_t sched;

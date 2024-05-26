@@ -65,7 +65,7 @@ int Semaph__semaphore_P(Semaphore *sem, Process *process) {
     if (sem->val < 0) {
         List__append(sem->waiters, (void *) process);
         //Chama a função para bloquear o processo que está rodando e pediu o semáforo
-        Scheduler__schedule_process(process, kernel->scheduler, SEMAPH_BLOCKED);
+        //Scheduler__schedule_process(process, kernel->scheduler, SEMAPH_BLOCKED);
         blocked = 1;
     }
 
@@ -82,9 +82,11 @@ void Semaph__semaphore_V(Semaphore *sem) {
     sem->val++;
 
     if (sem->val <= 0) {
-        Process *process = (Process *)List__remove_head(sem->waiters);
+        if(sem->waiters) {
+            Process *process = (Process *) List__remove_head(sem->waiters);
 
-        Scheduler__unblock_process(kernel->scheduler, process);
+            Scheduler__unblock_process(kernel->scheduler, process);
+        }
     }
 
     sem_post(&sem->mutex);

@@ -23,6 +23,6 @@ Scheduler *Scheduler__create();
 void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFlag flag);
 void Scheduler__unblock_process(Scheduler *scheduler, Process *process);
 void Scheduler__cpu_run();
-int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_per_page);
+int Scheduler__exec_process(Segment *, Process *, int, int, int);
 
 #endif //SISTOP_SCHEDULER_H
