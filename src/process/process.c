@@ -102,3 +102,32 @@ void Process__cast_opcode(Instruction *instr, char *opcode) {
         instr->sem = opcode[2];
     }
 }
+
+/// Finish the process, clears the memory from the segment + retires from PCB
+/// \param process Process to be finished
+void Process__finish(Process *process){
+    Segment *seg_aux;
+    Page *page_aux;
+    Node *s, *p;
+
+    // Search the segment from process in segment_table 
+    for (s = kernel->segment_table->head; s != NULL ; s = s->next) {
+        seg_aux = (Segment *) s->content;
+
+        if(seg_aux->seg_id == process->segment_id)
+            break;
+    }
+
+    // Clears segment from memory
+    kernel->remaining_memory += seg_aux->seg_size;
+
+    for (Node *p = seg_aux->pages->head; p != NULL ; p = p->next) {
+        page_aux = (Page *) p->content;
+        free (page_aux);
+    }
+
+    free(seg_aux);
+
+    free(process);
+}
+
