@@ -287,9 +287,9 @@ void Interface__update_process_window() {
         for (Node *aux = kernel->pcb->head; aux != NULL ; aux = aux->next) {
             process = (Process *) aux->content;
 
-            sprintf(output, "PID: %d, Name: %s, State: %s, Seg Id: %d, Priority: %d.",
+            sprintf(output, "PID: %d, Name: %s, State: %s, Seg Id: %d, Priority: %d, PC: %d.",
                     process->pid, process->name, Interface__cast_process_state(process->state),
-                    process->segment_id, process->priority);
+                    process->segment_id, process->priority, process->pc);
 
             usleep(SLEEP_TIME);
 

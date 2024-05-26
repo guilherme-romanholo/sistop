@@ -81,6 +81,7 @@ void Memory__create_pages(Segment *segment, List *instructions) {
         page->page_id = i;
         page->num_instructions_page = instructions_per_page;
         page->used_bit = 0;
+        page->total_instructions = instructions->size;
         page->instructions = List__create();
 
         qtd_instr = 0;

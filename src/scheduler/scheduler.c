@@ -4,6 +4,8 @@
 #include "../kernel/kernel.h"
 #include "scheduler.h"
 
+/// Create scheduler
+/// \return Created scheduler
 Scheduler* Scheduler__create() {
     Scheduler* scheduler = malloc(sizeof(Scheduler));
 
@@ -14,48 +16,48 @@ Scheduler* Scheduler__create() {
     return scheduler;
 }
 
+/// Schedule process of queue head
+/// \param process Queue head process
+/// \param scheduler Scheduler
+/// \param flag Process flag
 void Scheduler__schedule_process(Process *process, Scheduler *scheduler, Sched_Flags flag){
-    //Basicamente, temos uma lista de processos prontos para escalonar, então pegamos
-    // a cabeça da lista para executar, depois de executar (ou interromper por algum motivo)
-    // Re-insere ele na lista de prontos e executa a cabeça de novo
-
     if (flag == SCHEDULE_PROCESS) {
+        process->state = RUNNING;
         scheduler->quantum = 5000 / process->priority;
         scheduler->scheduled_proc = (Process *) List__remove_head(scheduler->scheduler_queue);
-        process->state = RUNNING;
     } else if (flag == PROCESS_END) {
-        scheduler->scheduled_proc = NULL;
         process->state = TERMINATED;
-    } else if (flag == QUANTUM_END || flag == IO_REQUESTED){
+        scheduler->scheduled_proc = NULL;
+    } else if (flag == QUANTUM_END || flag == IO_REQUESTED) {
         process->state = READY;
-        List__append(scheduler->scheduler_queue, (void *)process);
+        List__append(scheduler->scheduler_queue, (void *) process);
         scheduler->scheduler_queue = NULL;
-    } else if (flag == SEMAPH_BLOCKED){
+    } else if (flag == SEMAPH_BLOCKED) {
         process->state = WAITING;
-        List__append(scheduler->blocked_queue,(void *)process);
+        List__append(scheduler->blocked_queue,(void *) process);
         scheduler->scheduler_queue = NULL;
     }
-
 }
 
+/// Unlock waiting scheduler process
+/// \param scheduler Kernel scheduler
+/// \param process Process to be unlocked
 void Scheduler__unblock_process(Scheduler *scheduler, Process *process){
-    Node *aux = scheduler->blocked_queue->head;
     Process *proc_aux;
 
     //Search and remove the process from the blocked queue
-    while(aux){
-        proc_aux = (Process *)aux->content;
+    for (Node *aux = scheduler->blocked_queue->head; aux != NULL; aux = aux->next) {
+        proc_aux = (Process *) aux->content;
 
         if(proc_aux->pid == process->pid)
             List__remove_node(scheduler->blocked_queue,aux);
-
-        aux = aux->next;
     }
 
     //Append the process in the scheduler queue again
-    List__append(scheduler->scheduler_queue,(void *)process);
+    List__append(scheduler->scheduler_queue, (void *) process);
 }
 
+/// Run the scheduler in CPU
 void Scheduler__cpu_run(){
     Segment *segment;
     Page *page;
@@ -66,12 +68,12 @@ void Scheduler__cpu_run(){
     while (1) {
         if (kernel->scheduler->scheduled_proc == NULL){
             if (kernel->pcb->size != 0) {
-                Process* process = (Process *)List__remove_head(kernel->scheduler->scheduler_queue);
+                Process* process = (Process *) List__remove_head(kernel->scheduler->scheduler_queue);
                 Scheduler__schedule_process(process,kernel->scheduler, SCHEDULE_PROCESS);
             }
         } else {
             segment = Memory__fetch_segment(kernel->scheduler->scheduled_proc->segment_id);
-            page = (Page *)segment->pages->head;
+            page = (Page *) segment->pages->head->content;
             
             flag = exec_process(segment, kernel->scheduler->scheduled_proc, kernel->scheduler->quantum, page->num_instructions_page);
 
@@ -82,7 +84,7 @@ void Scheduler__cpu_run(){
 
 Sched_Flags exec_process(Segment *segment, Process *process, int quantum, int num_instructions_page){
     int blocked = 0;
-    int page_id = ceil((double) process->pc/num_instructions_page);
+    int page_id = ceil((double) process->pc / num_instructions_page);
 
     Sched_Flags flag;
 

@@ -23,6 +23,7 @@ typedef struct {
     int page_id;
     int page_size;
     int used_bit;
+    int total_instructions;
     int num_instructions_page;
     List *instructions; // (Instruction *)
 } Page;
