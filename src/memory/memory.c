@@ -31,7 +31,7 @@ void Memory__fin_load_memory(List *memory_request) {
     List__append(kernel->pcb, (void *)process);
 
     // TODO: Add process to Scheduler
-    List__append(kernel->scheduler->scheduler_queue, (void *)process);
+    List__append(kernel->scheduler->sched_queue, (void *)process);
 
     sem_post(&kernel_interface->mutex);
     sem_post(&memory_interface->mutex);
@@ -79,7 +79,7 @@ void Memory__create_pages(Segment *segment, List *instructions) {
         Page *page = malloc(sizeof(Page));
         page->page_size = PAGE_SIZE;
         page->page_id = i;
-        page->num_instructions_page = instructions_per_page;
+        page->instr_per_page = instructions_per_page;
         page->used_bit = 0;
         page->total_instructions = instructions->size;
         page->instructions = List__create();

@@ -3,7 +3,15 @@
 #include "scheduler/scheduler.h"
 int main(int argc, char *argv[])
 {
+    pthread_t sched;
+    pthread_create(&sched,
+                   NULL,
+                   (void *) Scheduler__cpu_run,
+                   NULL);
+
     Kernel__create();
     Interface__init();
+
+
     return 0;
 }

@@ -319,3 +319,47 @@ char *Interface__cast_process_state(int state) {
             return "Error";
     }
 }
+
+/*
+ * ###################
+ * #    Scheduler    #
+ * ###################
+ * */
+
+void Interface__add_scheduler_log(int pid, Instruction *instr, int quantum) {
+    char output[BUFFER_SIZE];
+
+    usleep(SLEEP_TIME);
+
+    sprintf(output, "Process %d %s: Remain %d u.t.",
+            pid, Interface__cast_instruction_opcode(instr), quantum);
+
+    Interface__add_line(scheduler_interface, 1, output);
+}
+
+char *Interface__cast_instruction_opcode(Instruction *instr) {
+    char *output = malloc(sizeof(char) * BUFFER_SIZE);
+
+    switch (instr->opcode) {
+        case EXEC:
+            sprintf(output, "Executing");
+            break;
+        case READ:
+            sprintf(output, "Reading");
+            break;
+        case WRITE:
+            sprintf(output, "Writing");
+            break;
+        case PRINT:
+            sprintf(output, "Printing");
+            break;
+        case SEM_P:
+            sprintf(output, "Require Sem %c", instr->sem);
+            break;
+        case SEM_V:
+            sprintf(output, "Release Sem %c", instr->sem);
+            break;
+    }
+
+    return output;
+}

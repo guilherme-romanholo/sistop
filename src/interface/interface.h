@@ -2,8 +2,9 @@
 #define SISTOP_INTERFACE_H
 
 #define INPUT_SIZE 10
-#define SLEEP_TIME 250
+#define SLEEP_TIME 500
 
+#include "../process/process.h"
 #include <ncurses.h>
 #include <semaphore.h>
 #include <pthread.h>
@@ -25,6 +26,7 @@ typedef struct {
 extern Interface *kernel_interface;
 extern Interface *memory_interface;
 extern Interface *process_interface;
+extern Interface *scheduler_interface;
 
 void Interface__init();
 void Interface__destroy(Interface *);
@@ -36,5 +38,7 @@ void Interface__kernel_semaphores();
 void Interface__update_memory_window();
 void Interface__update_process_window();
 char *Interface__cast_process_state(int);
+void Interface__add_scheduler_log(int pid, Instruction *instr, int quantum);
+char *Interface__cast_instruction_opcode(Instruction *);
 
 #endif //SISTOP_INTERFACE_H
