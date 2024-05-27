@@ -112,7 +112,7 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
 
             switch (instruction->opcode) {
                 case EXEC:
-                    quantum -= instruction->value;
+                    quantum = 0;
                     proc->pc++;
                     Interface__send_data(sched_win, SCHED_EXEC_FMT, proc->pid, instruction->value, quantum);
                     break;
@@ -141,21 +141,21 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
                     break;
 
                 case PRINT:
-                    quantum -= instruction->value;
+                    quantum = 0;
                     proc->pc++;
                     flag = IO_REQUESTED;
                     Interface__send_data(sched_win, SCHED_PRINT_FMT, proc->pid, instruction->value, quantum);
                     break;
 
                 case READ:
-                    quantum -= instruction->value;
+                    quantum = 0;
                     proc->pc++;
                     flag = IO_REQUESTED;
                     Interface__send_data(sched_win, SCHED_READ_FMT, proc->pid, instruction->value, quantum);
                     break;
 
                 case WRITE:
-                    quantum -= instruction->value;
+                    quantum = 0;
                     proc->pc++;
                     flag = IO_REQUESTED;
                     Interface__send_data(sched_win, SCHED_WRITE_FMT, proc->pid, instruction->value, quantum);
