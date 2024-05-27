@@ -40,7 +40,6 @@ void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFl
         List__append(scheduler->blocked_queue,(void *) process);
         scheduler->sched_proc = NULL;
     }
-    sem_post(&process_interface->mutex);
 }
 
 /// Unlock waiting scheduler process
@@ -72,11 +71,9 @@ void Scheduler__cpu_run(){
     while (!kernel);
 
     while (1) {
-        //sleep(3);
         if (kernel->scheduler->sched_proc == NULL){
 
             if (kernel->pcb->size == 0) {
-                //printf("Sem processos para escalonar\n");
                 //sleep(3);
             }else{
                 Process* process = (Process *) List__remove_head(kernel->scheduler->sched_queue);
@@ -87,7 +84,9 @@ void Scheduler__cpu_run(){
             segment = Memory__fetch_segment(kernel->scheduler->sched_proc->segment_id);
             page = (Page *) segment->pages->head->content;
             
-            flag = Scheduler__exec_process(segment, kernel->scheduler->sched_proc, kernel->scheduler->quantum, page->instr_per_page, page->total_instructions);
+            flag = Scheduler__exec_process(segment, kernel->scheduler->sched_proc,
+                                           kernel->scheduler->quantum, page->instr_per_page,
+                                           page->total_instructions);
 
             Scheduler__schedule_process(kernel->scheduler->sched_proc, kernel->scheduler, flag);
         }
@@ -107,72 +106,70 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
     for (p = Memory__fetch_page(seg, page_id); (p != NULL) && (quantum > 0); p = p->next) {
         page = (Page *) p->content;
 
-        for (i = Memory__fetch_instruction(page, (proc->pc%instr_per_page)); (i != NULL) && (quantum > 0) ; i = i->next) {
+        for (i = Memory__fetch_instruction(page, (proc->pc % instr_per_page)); (i != NULL) && (quantum > 0) ; i = i->next) {
+            sleep(2);
             instruction = (Instruction *) i->content;
 
             switch (instruction->opcode) {
                 case EXEC:
                     quantum -= instruction->value;
                     proc->pc++;
-                    //printf("Processo %d executou %d u.t.; restam %d u.t.\n", proc->pid, instruction->value, quantum);
-                    //sleep(3);
+                    Interface__send_data(sched_win, SCHED_EXEC_FMT, proc->pid, instruction->value, quantum);
                     break;
+
                 case SEM_P:
                     sem = Semaph__semaphore_search(instruction->sem);
                     blocked = Semaph__semaphore_P(sem, proc);
-                    //printf("Processo %d solicitou o semáforo %c; restam %d u.t.\n", proc->pid, instruction->sem, quantum);
-                    //sleep(3);
+                    Interface__send_data(sched_win, SCHED_SEMP_FMT, proc->pid, instruction->sem, quantum);
                     if (blocked) {
                         quantum = 0;
                         flag = SEMAPH_BLOCKED;
                         proc->pc++;
-                        //printf("Processo %d foi bloqueado pelo semáforo %c\n", proc->pid, instruction->sem);
+                        Interface__send_data(sched_win, SCHED_SEM_BLOCK_FMT, proc->pid, instruction->sem);
                     } else {
                         quantum -= 200;
                         proc->pc++;
                     }
                     break;
+
                 case SEM_V:
                     sem = Semaph__semaphore_search(instruction->sem);
                     Semaph__semaphore_V(sem);
                     quantum -= 200;
                     proc->pc++;
-                    //printf("Processo %d liberou o semáforo %c; restam %d u.t.\n", proc->pid, instruction->sem, quantum);
-                    //sleep(3);
+                    Interface__send_data(sched_win, SCHED_SEMV_FMT, proc->pid, instruction->sem, quantum);
                     break;
+
                 case PRINT:
-                    quantum = 0;
+                    quantum -= instruction->value;
                     proc->pc++;
                     flag = IO_REQUESTED;
-                    //printf("Processo %d printou %d u.t.; restam %d u.t.\n", proc->pid, instruction->value, quantum);
-                    //sleep(3);
+                    Interface__send_data(sched_win, SCHED_PRINT_FMT, proc->pid, instruction->value, quantum);
                     break;
+
                 case READ:
-                    quantum = 0;
+                    quantum -= instruction->value;
                     proc->pc++;
                     flag = IO_REQUESTED;
-                    //printf("Processo %d leu %d u.t.; restam %d u.t.\n", proc->pid, instruction->value, quantum);
-                    //sleep(3);
+                    Interface__send_data(sched_win, SCHED_READ_FMT, proc->pid, instruction->value, quantum);
                     break;
+
                 case WRITE:
-                    quantum = 0;
+                    quantum -= instruction->value;
                     proc->pc++;
                     flag = IO_REQUESTED;
-                    //printf("Processo %d escreveu %d u.t.; restam %d u.t.\n", proc->pid, instruction->value, quantum);
-                    //sleep(3);
+                    Interface__send_data(sched_win, SCHED_WRITE_FMT, proc->pid, instruction->value, quantum);
                     break;
             }
 
-            sem_post(&process_interface->mutex);
-
-            usleep(SLEEP_TIME);
-            Interface__add_scheduler_log(proc->pid, instruction, quantum);
             if (quantum < 0) {
                 instruction->value = -1 * quantum;
                 proc->pc--;
                 flag = QUANTUM_END;
+                Interface__send_data(sched_win, SCHED_QUANTUM_TIMEOUT_FMT, proc->pid);
             }
 
+            Interface__refresh_process_win();
         }
 
     }
@@ -182,68 +179,3 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
 
     return flag;
 }
-
-// SchedFlag exec_process(Segment *segment, Process *process, int quantum, int num_instructions_page){
-//     int blocked = 0;
-//     int page_id = ceil((double) process->pc / num_instructions_page);
-//
-//     SchedFlag flag;
-//
-//     Node *aux_page = Memory__fetch_page(segment, page_id);
-//     Page *curr_page = (Page *) aux_page->content;
-//
-//     Node *aux_instr = curr_page->instructions->head;
-//     Instruction *instr;
-//
-//     //Percorre a lista de páginas que estão na memória
-//     while(aux_page && quantum > 0){
-//         curr_page = (Page *)aux_page->content;
-//
-//         //Para cada página, percorre a lista de instruções e vai "executando"
-//         while(aux_instr && quantum > 0){
-//             instr = (Instruction *)aux_instr->content;
-//
-//             if(instr->opcode == EXEC){
-//                 quantum -= instr->value;
-//                 process->pc++;
-//             }else if(instr->opcode == SEM_P){
-//                 Semaphore *sem = Semaph__semaphore_search(instr->sem);
-//                 blocked = Semaph__semaphore_P(sem, process);
-//
-//                 if(blocked){
-//                     quantum = 0;
-//                     flag = SEMAPH_BLOCKED;
-//                 }
-//                 else{
-//                     quantum -= 200;
-//                     process->pc++;
-//                 }
-//                 //interrompe o processo
-//             }else if(instr->opcode == SEM_V){
-//                 Semaphore *sem = Semaph__semaphore_search(instr->sem);
-//                 Semaph__semaphore_V(sem);
-//                 quantum -= 200;
-//                 process->pc++;
-//             }else{
-//                 quantum = 0;
-//                 process->pc++;
-//                 flag = IO_REQUESTED;
-//                 //interrompe o processo
-//             }
-//
-//             aux_instr = aux_instr->next;
-//
-//             if(quantum < 0){
-//                 instr->value = -1 * quantum; //Recebe o tanto que falta para completar
-//                 flag = QUANTUM_END;
-//             }
-//         }
-//
-//         aux_page = aux_page->next;
-//     }
-//
-//     if(aux_page == NULL)
-//         flag = PROCESS_END;
-//
-//     return flag;
-// }

@@ -33,9 +33,9 @@ void Memory__fin_load_memory(List *memory_request) {
     // TODO: Add process to Scheduler
     List__append(kernel->scheduler->sched_queue, (void *)process);
 
-    sem_post(&kernel_interface->mutex);
-    sem_post(&memory_interface->mutex);
-    sem_post(&process_interface->mutex);
+    Interface__refresh_kernel_win();
+    Interface__refresh_process_win();
+    Interface__refresh_memory_win();
 }
 
 /// Create a segment for the process
