@@ -30,7 +30,6 @@ void Memory__fin_load_memory(List *memory_request) {
     process->state = READY;
     List__append(kernel->pcb, (void *)process);
 
-    // TODO: Add process to Scheduler
     List__append(kernel->scheduler->sched_queue, (void *)process);
 
     Interface__refresh_kernel_win();

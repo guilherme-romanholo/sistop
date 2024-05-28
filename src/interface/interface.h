@@ -11,13 +11,14 @@
 #define PROC_INTERFACE_FMT "PID %d, Name: %s, Seg ID: %d, State: %s, Priority: %d, PC: %d"
 #define MEMORY_INTERFACE_FMT "Segment ID: %d, Segment Size: %d Kb, Num Pages: %d."
 
-#define SCHED_PRINT_FMT "PID: %d, Print: %d ut, Remaing quantum: %d ut."
-#define SCHED_WRITE_FMT "PID: %d, Write: %d ut, Remaing quantum: %d ut."
-#define SCHED_READ_FMT "PID: %d, Read: %d ut, Remaing quantum: %d ut."
-#define SCHED_EXEC_FMT "PID: %d, Exec: %d ut, Remaing quantum: %d ut."
-#define SCHED_SEMV_FMT "PID: %d, Release Semaph %c, Remaing quantum: %d ut."
-#define SCHED_SEMP_FMT "PID: %d, Request Semaph %c, Remaing quantum: %d ut."
+#define SCHED_PRINT_FMT "PID: %d, Print: %d ut, Remaining quantum: %d ut."
+#define SCHED_WRITE_FMT "PID: %d, Write: %d ut, Remaining quantum: %d ut."
+#define SCHED_READ_FMT "PID: %d, Read: %d ut, Remaining quantum: %d ut."
+#define SCHED_EXEC_FMT "PID: %d, Exec: %d ut, Remaining quantum: %d ut."
+#define SCHED_SEMV_FMT "PID: %d, Release Semaph %c, Remaining quantum: %d ut."
+#define SCHED_SEMP_FMT "PID: %d, Request Semaph %c."
 #define SCHED_SEM_BLOCK_FMT "PID: %d, Blocked by Semaph %c."
+#define SCHED_SEM_ACQUIRED_FMT "PID: %d, Acquired Semaph %c, Remaining quantum: %d ut."
 #define SCHED_QUANTUM_TIMEOUT_FMT "PID: %d, Quantum timeout."
 
 

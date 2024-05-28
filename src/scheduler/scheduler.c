@@ -73,9 +73,7 @@ void Scheduler__cpu_run(){
     while (1) {
         if (kernel->scheduler->sched_proc == NULL){
 
-            if (kernel->pcb->size == 0) {
-                //sleep(3);
-            }else{
+            if (kernel->pcb->size != 0) {
                 Process* process = (Process *) List__remove_head(kernel->scheduler->sched_queue);
                 Scheduler__schedule_process(process, kernel->scheduler, SCHEDULE_PROCESS);
             }
@@ -105,6 +103,7 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
 
     for (p = Memory__fetch_page(seg, page_id); (p != NULL) && (quantum > 0); p = p->next) {
         page = (Page *) p->content;
+        page->used_bit = 1;
 
         for (i = Memory__fetch_instruction(page, (proc->pc % instr_per_page)); (i != NULL) && (quantum > 0) ; i = i->next) {
             sleep(2);
@@ -124,7 +123,7 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
                 case SEM_P:
                     sem = Semaph__semaphore_search(instruction->sem);
                     blocked = Semaph__semaphore_P(sem, proc);
-                    Interface__send_data(sched_win, SCHED_SEMP_FMT, proc->pid, instruction->sem, quantum);
+                    Interface__send_data(sched_win, SCHED_SEMP_FMT, proc->pid, sem->name);
                     if (blocked) {
                         quantum = 0;
                         flag = SEMAPH_BLOCKED;
@@ -133,6 +132,7 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
                     } else {
                         quantum -= 200;
                         proc->pc++;
+                        Interface__send_data(sched_win, SCHED_SEM_ACQUIRED_FMT, proc->pid, instruction->sem, quantum);
                     }
                     break;
 

@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "process.h"
 #include "../kernel/kernel.h"
+#include "../interface/interface.h"
 
 /// Create a process
 /// \param file File for synthetic process
@@ -108,9 +110,9 @@ void Process__cast_opcode(Instruction *instr, char *opcode) {
 void Process__finish(Process *process){
     Segment *seg_aux;
     Process *proc_aux;
-    Node *s, *p;
+    Node *p, *s;
+    Page *page;
 
-    // Search the segment from process in segment_table 
     for (s = kernel->segment_table->head; s != NULL ; s = s->next) {
         seg_aux = (Segment *) s->content;
 
@@ -121,18 +123,18 @@ void Process__finish(Process *process){
     // Clears segment from memory
     kernel->remaining_memory += seg_aux->seg_size;
 
-    do {
-        p = seg_aux->pages->head->next;
-        List__remove_head(seg_aux->pages); // TODO: Sem retorno vai?
-    } while (p != NULL);
+    for (p = seg_aux->pages->head; p != NULL ; p = p->next) {
+        page = (Page *) p->content;
+        List__destroy(page->instructions);
+    }
 
-    /*for (Node *p = seg_aux->pages->head; p != NULL ; p = p->next)
-        List__remove_node(seg_aux->pages, p); */
+    List__destroy(seg_aux->pages);
 
+    sleep(2);
     // Removes segment from segment table
     List__remove_node(kernel->segment_table, s);
 
-    // Search the segment from process in segment_table 
+    // Search the segment from process in segment_table
     for (s = kernel->pcb->head; s != NULL ; s = s->next) {
         proc_aux = (Process *) s->content;
 
@@ -142,6 +144,5 @@ void Process__finish(Process *process){
 
     List__remove_node(kernel->pcb, s);
 
-    free(process);
+    Interface__refresh_process_win();
 }
-
