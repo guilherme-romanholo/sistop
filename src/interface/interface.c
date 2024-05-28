@@ -80,6 +80,7 @@ void Interface__init() {
 
         if (!strcmp(input, "q"))
             break;
+            // TODO: Arquivo errado
 
         strcat(path, input);
         Kernel__syscall(CREATE_PROCESS, (void *) path);
@@ -189,6 +190,7 @@ void Interface__refresh_process_win() {
 
     for (Node *p = kernel->pcb->head; p != NULL ; p = p->next) {
         Process *proc = (Process *) p->content;
+
         Interface__send_data(proc_win, PROC_INTERFACE_FMT, proc->pid, proc->name,
                              proc->segment_id, Interface__cast_process_state(proc->state),
                              proc->priority, proc->pc);
@@ -244,7 +246,7 @@ void Interface__update() {
     while (TRUE) {
         sem_wait(&update_mutex);
 
-        usleep(200);
+        usleep(200); 
 
         Interface__add_line(temp_win, 1, data);
 

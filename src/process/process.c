@@ -108,7 +108,7 @@ void Process__cast_opcode(Instruction *instr, char *opcode) {
 void Process__finish(Process *process){
     Segment *seg_aux;
     Process *proc_aux;
-    Node *s;
+    Node *s, *p;
 
     // Search the segment from process in segment_table 
     for (s = kernel->segment_table->head; s != NULL ; s = s->next) {
@@ -121,10 +121,16 @@ void Process__finish(Process *process){
     // Clears segment from memory
     kernel->remaining_memory += seg_aux->seg_size;
 
-    for (Node *p = seg_aux->pages->head; p != NULL ; p = p->next) 
-        free (p);
+    do {
+        p = seg_aux->pages->head->next;
+        List__remove_head(seg_aux->pages); // TODO: Sem retorno vai?
+    } while (p != NULL);
 
-    free(s);
+    /*for (Node *p = seg_aux->pages->head; p != NULL ; p = p->next)
+        List__remove_node(seg_aux->pages, p); */
+
+    // Removes segment from segment table
+    List__remove_node(kernel->segment_table, s);
 
     // Search the segment from process in segment_table 
     for (s = kernel->pcb->head; s != NULL ; s = s->next) {
@@ -134,7 +140,8 @@ void Process__finish(Process *process){
             break;
     }
 
-    free(s);
+    List__remove_node(kernel->pcb, s);
+
     free(process);
 }
 

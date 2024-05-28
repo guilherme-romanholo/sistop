@@ -46,5 +46,6 @@ void Process__create(const char *);
 List *Process__read_instructions(FILE *, char *);
 Instruction *Process__parse_instruction(char *);
 void Process__cast_opcode(Instruction *, char *);
+void Process__finish(Process *);
 
 #endif //SISTOP_PROCESS_H

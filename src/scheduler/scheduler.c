@@ -112,9 +112,13 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
 
             switch (instruction->opcode) {
                 case EXEC:
-                    quantum = 0;
+                    quantum -= instruction->value;
                     proc->pc++;
-                    Interface__send_data(sched_win, SCHED_EXEC_FMT, proc->pid, instruction->value, quantum);
+                    if (quantum < 0)
+                        Interface__send_data(sched_win, SCHED_EXEC_FMT, proc->pid, instruction->value, 0);
+                    else
+                        Interface__send_data(sched_win, SCHED_EXEC_FMT, proc->pid, instruction->value, quantum);
+                        
                     break;
 
                 case SEM_P:

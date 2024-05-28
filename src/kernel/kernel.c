@@ -33,6 +33,7 @@ void Kernel__syscall(Syscall call, void *arg) {
             Process__create((const char *)arg);
             break;
         case FINISH_PROCESS:
+            Process__finish((Process *)arg);
             break;
         case INTERRUPT_PROCESS:
             break;
