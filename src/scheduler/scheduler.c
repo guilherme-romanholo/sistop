@@ -30,7 +30,7 @@ void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFl
     } else if (flag == PROCESS_END) {
         process->state = TERMINATED;
         scheduler->sched_proc = NULL;
-        kernel->pcb->size--;
+        Kernel__syscall(FINISH_PROCESS, (void *) process);
     } else if (flag == QUANTUM_END || flag == IO_REQUESTED) {
         process->state = READY;
         List__append(scheduler->sched_queue, (void *) process);
@@ -46,18 +46,7 @@ void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFl
 /// \param scheduler Kernel scheduler
 /// \param process Process to be unlocked
 void Scheduler__unblock_process(Scheduler *scheduler, Process *process){
-    Process *proc_aux;
-    //printf("Entrando na função semV\n\n");
-    //Search and remove the process from the blocked queue
-    for (Node *aux = scheduler->blocked_queue->head; aux != NULL; aux = aux->next) {
-        proc_aux = (Process *) aux->content;
-
-        if(proc_aux->pid == process->pid) {
-            //printf("Removendo processo %d da lista de bloqueados\n\n", process->pid);
-            List__remove_node(scheduler->blocked_queue, aux);
-        }
-    }
-
+    List__remove_node(scheduler->blocked_queue, (void *) process, Utils__compare_process);
     //Append the process in the scheduler queue again
     List__append(scheduler->sched_queue, (void *) process);
 }
@@ -71,6 +60,7 @@ void Scheduler__cpu_run(){
     while (!kernel);
 
     while (1) {
+
         if (kernel->scheduler->sched_proc == NULL){
 
             if (kernel->pcb->size != 0) {
@@ -81,7 +71,7 @@ void Scheduler__cpu_run(){
         } else {
             segment = Memory__fetch_segment(kernel->scheduler->sched_proc->segment_id);
             page = (Page *) segment->pages->head->content;
-            
+
             flag = Scheduler__exec_process(segment, kernel->scheduler->sched_proc,
                                            kernel->scheduler->quantum, page->instr_per_page,
                                            page->total_instructions);
@@ -106,7 +96,7 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
         page->used_bit = 1;
 
         for (i = Memory__fetch_instruction(page, (proc->pc % instr_per_page)); (i != NULL) && (quantum > 0) ; i = i->next) {
-            sleep(2);
+            sleep(1);
             instruction = (Instruction *) i->content;
 
             switch (instruction->opcode) {
@@ -117,7 +107,6 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
                         Interface__send_data(sched_win, SCHED_EXEC_FMT, proc->pid, instruction->value, 0);
                     else
                         Interface__send_data(sched_win, SCHED_EXEC_FMT, proc->pid, instruction->value, quantum);
-                        
                     break;
 
                 case SEM_P:

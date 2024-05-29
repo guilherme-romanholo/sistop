@@ -23,6 +23,7 @@ add_executable(sistop
         ./src/semaph/semaph.h
         ./src/utils/list.c
         ./src/utils/list.h
+        ./src/utils/utils.c
         ./src/utils/utils.h
         ./src/interface/interface.c
         ./src/interface/interface.h

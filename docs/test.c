@@ -1,4 +1,4 @@
-#include "list.h"
+#include "../src/utils/list.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -20,6 +20,7 @@ int main() {
 
     Node *aux = list->head;
 
+    printf("List:\n");
     while (aux != NULL) {
         printf("%d\n", *((int *)aux->content));
         aux = aux->next;
@@ -29,13 +30,14 @@ int main() {
 
     aux = list->head;
 
+    printf("Remove node:\n");
     while (aux != NULL) {
         printf("%d\n", *((int *)aux->content));
         aux = aux->next;
     }
 
     int *z = (int *) List__remove_head(list);
-    printf("%d", *z);
+    printf("Removed head: %d\n", *z);
 
     return 0;
 }

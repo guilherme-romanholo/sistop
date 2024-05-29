@@ -72,6 +72,8 @@ void Interface__init() {
     pthread_create(&thread, NULL, (void *) Interface__update, NULL);
 
     Interface__refresh_kernel_win();
+    Interface__refresh_process_win();
+    Interface__refresh_memory_win();
 
     while (TRUE) {
         char path[20] = "../synt/";
@@ -162,7 +164,6 @@ void Interface__input_menu(char *input) {
 
     menu_win->curr_line = 0;
 
-
     echo();
     wgetnstr(menu_win->subwindow, input, INPUT_SIZE);
     noecho();
@@ -187,19 +188,21 @@ void Interface__refresh_kernel_win() {
 void Interface__refresh_process_win() {
     werase(proc_win->subwindow);
     proc_win->curr_line = 0;
+    wrefresh(proc_win->subwindow);
 
     for (Node *p = kernel->pcb->head; p != NULL ; p = p->next) {
         Process *proc = (Process *) p->content;
 
         Interface__send_data(proc_win, PROC_INTERFACE_FMT, proc->pid, proc->name,
-                             proc->segment_id, Interface__cast_process_state(proc->state),
-                             proc->priority, proc->pc);
+                             proc->segment_id, proc->priority,
+                             proc->pc, Interface__cast_process_state(proc->state));
     }
 }
 
 void Interface__refresh_memory_win() {
     werase(mem_win->subwindow);
     mem_win->curr_line = 0;
+    wrefresh(mem_win->subwindow);
 
     for (Node *s = kernel->segment_table->head; s != NULL ; s = s->next) {
         Segment *segment = (Segment *) s->content;

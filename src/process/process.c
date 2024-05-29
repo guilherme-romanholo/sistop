@@ -5,6 +5,7 @@
 #include "process.h"
 #include "../kernel/kernel.h"
 #include "../interface/interface.h"
+#include "../utils/utils.h"
 
 /// Create a process
 /// \param file File for synthetic process
@@ -56,7 +57,7 @@ List *Process__read_instructions(FILE *fp, char *buffer) {
 
     while (fgets(buffer, BUFFER_SIZE, fp) != NULL) {
         instruction = Process__parse_instruction(buffer);
-        List__append(instr_list, instruction);
+        List__append(instr_list, (void *) instruction);
     }
 
     return instr_list;
@@ -108,41 +109,23 @@ void Process__cast_opcode(Instruction *instr, char *opcode) {
 /// Finish the process, clears the memory from the segment + retires from PCB
 /// \param process Process to be finished
 void Process__finish(Process *process){
-    Segment *seg_aux;
-    Process *proc_aux;
-    Node *p, *s;
-    Page *page;
+    Segment *segment = Memory__fetch_segment(process->segment_id);
 
-    for (s = kernel->segment_table->head; s != NULL ; s = s->next) {
-        seg_aux = (Segment *) s->content;
+    kernel->remaining_memory += segment->seg_size;
 
-        if(seg_aux->seg_id == process->segment_id)
-            break;
-    }
+    List__remove_node(kernel->pcb, (void *) process, Utils__compare_process);
+    Process_free_process(process);
 
-    // Clears segment from memory
-    kernel->remaining_memory += seg_aux->seg_size;
+    List__remove_node(kernel->segment_table, (void *) segment, Utils__compare_segment);
+    Memory__free_segment(segment);
 
-    for (p = seg_aux->pages->head; p != NULL ; p = p->next) {
-        page = (Page *) p->content;
-        List__destroy(page->instructions);
-    }
+    Interface__refresh_memory_win();
+    Interface__refresh_kernel_win();
+}
 
-    List__destroy(seg_aux->pages);
+void Process_free_process(void *p) {
+    Process *process = (Process *) p;
 
-    sleep(2);
-    // Removes segment from segment table
-    List__remove_node(kernel->segment_table, s);
-
-    // Search the segment from process in segment_table
-    for (s = kernel->pcb->head; s != NULL ; s = s->next) {
-        proc_aux = (Process *) s->content;
-
-        if(proc_aux->pid == process->pid)
-            break;
-    }
-
-    List__remove_node(kernel->pcb, s);
-
-    Interface__refresh_process_win();
+    free(process->name);
+    free(process);
 }

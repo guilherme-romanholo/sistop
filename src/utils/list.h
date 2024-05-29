@@ -20,6 +20,6 @@ void List__destroy(List *, void(*)(void *));
 
 void List__append(List *, void *);
 void *List__remove_head(List *);
-void List__remove_node(List *, void *, int (*)(void *, void*), void(*)(void *));
+void List__remove_node(List *, void *, int (*)(void *, void*));
 
 #endif //SISTOP_LIST_H

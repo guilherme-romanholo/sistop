@@ -1,16 +1,21 @@
 #include "memory.h"
+#include <unistd.h>
 #include "../kernel/kernel.h"
 #include "../interface/interface.h"
 #include <stdlib.h>
 #include <math.h>
 
+// ###################
+// #      CORE       #
+// ###################
+
 /// Make a memory request to the process
 /// \param memory_request Process that make the request
 void Memory__req_load_memory(List *memory_request) {
     Process *process = (Process *) memory_request->head->content;
-    Segment *segment = Memory__create_segment(process);
-    List *instructions = (List *) memory_request->tail->content;
+    List *instructions = (List *) (memory_request->head->next)->content;
 
+    Segment *segment = Memory__create_segment(process);
     Memory__create_pages(segment, instructions);
 
     long remaining = kernel->remaining_memory - process->segment_size;
@@ -19,7 +24,7 @@ void Memory__req_load_memory(List *memory_request) {
     if (remaining < 0)
         kernel->remaining_memory += Memory__swap_out(segment);
 
-    List__append(kernel->segment_table, (void *)segment);
+    List__append(kernel->segment_table, (void *) segment);
 }
 
 /// Finalize memory creation
@@ -37,6 +42,34 @@ void Memory__fin_load_memory(List *memory_request) {
     Interface__refresh_memory_win();
 }
 
+int Memory__swap_out(Segment *segment) {
+    int free_mem = 0;
+    Segment *seg_aux;
+    Page *page_aux;
+
+    for (Node *s = kernel->segment_table->head; s != NULL ; s = s->next) {
+        seg_aux = (Segment *) s->content;
+
+        for (Node *p = seg_aux->pages->head; p != NULL ; p = p->next) {
+            page_aux = (Page *) p->content;
+
+            if (page_aux->used_bit == 1)
+                page_aux->used_bit = 0;
+            else
+                free_mem += page_aux->page_size;
+
+            if (free_mem >= segment->seg_size)
+                break;
+        }
+    }
+
+    return free_mem;
+}
+
+// #####################
+// #      CREATE       #
+// #####################
+
 /// Create a segment for the process
 /// \param process Process that request segment
 /// \return Returns the new segment
@@ -48,21 +81,6 @@ Segment *Memory__create_segment(Process *process) {
     segment->pages = List__create();
 
     return segment;
-}
-
-/// Fetch segment in segment kernel table by id
-/// \param seg_id Id of segment
-/// \return NULL or Fetched Segment
-Segment *Memory__fetch_segment(int seg_id) {
-    Segment *temp;
-
-    for (Node *aux = kernel->segment_table->head; aux != NULL ; aux = aux->next) {
-        temp = (Segment *) aux->content;
-        if (temp->seg_id == seg_id)
-            return temp;
-    }
-
-    return NULL;
 }
 
 /// Create pages with instructions for the new process
@@ -95,6 +113,25 @@ void Memory__create_pages(Segment *segment, List *instructions) {
     }
 }
 
+// #####################
+// #      FETCH        #
+// #####################
+
+/// Fetch segment in segment kernel table by id
+/// \param seg_id Id of segment
+/// \return NULL or Fetched Segment
+Segment *Memory__fetch_segment(int seg_id) {
+    Segment *temp;
+
+    for (Node *aux = kernel->segment_table->head; aux != NULL ; aux = aux->next) {
+        temp = (Segment *) aux->content;
+        if (temp->seg_id == seg_id)
+            return temp;
+    }
+
+    return NULL;
+}
+
 Node *Memory__fetch_page(Segment *seg, int page_id) {
     Node *aux;
     Page *temp;
@@ -110,7 +147,6 @@ Node *Memory__fetch_page(Segment *seg, int page_id) {
 
 Node *Memory__fetch_instruction(Page *page, int num_instruction) {
     Node *aux = page->instructions->head;
-    Instruction *temp;
 
     for (int i = num_instruction; i > 0; i--){
         aux = aux->next;
@@ -119,26 +155,29 @@ Node *Memory__fetch_instruction(Page *page, int num_instruction) {
     return aux;
 }
 
-int Memory__swap_out(Segment *segment) {
-    int free_mem = 0;
-    Segment *seg_aux;
-    Page *page_aux;
+// ####################
+// #      FREE        #
+// ####################
 
-    for (Node *s = kernel->segment_table->head; s != NULL ; s = s->next) {
-        seg_aux = (Segment *) s->content;
+void Memory__free_segment(void *s) {
+    Segment *segment = (Segment *) s;
 
-        for (Node *p = seg_aux->pages->head; p != NULL ; p = p->next) {
-            page_aux = (Page *) p->content;
+    List__destroy(segment->pages, Memory__free_page);
+    free(segment);
+}
 
-            if (page_aux->used_bit == 1)
-                page_aux->used_bit = 0;
-            else
-                free_mem += page_aux->page_size;
+void Memory__free_page(void *p) {
+    Node *aux;
+    Page *page = (Page *) p;
 
-            if (free_mem >= segment->seg_size)
-                break;
-        }
+    aux = page->instructions->head;
+
+    while (aux != NULL) {
+        Node *next = aux->next;
+        free(aux->content);
+        free(aux);
+        aux = next;
     }
 
-    return free_mem;
+    free(page);
 }

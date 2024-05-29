@@ -71,7 +71,7 @@ void *List__remove_head(List *list) {
 /// Remove node from list
 /// \param list List
 /// \param node Node to be removed
-void List__remove_node(List *list, void *data, int (*compare)(void *, void*), void(*free_func)(void *)) {
+void List__remove_node(List *list, void *data, int (*compare)(void *, void*)) {
     Node *curr = list->head;
     Node *prev = NULL;
 
@@ -89,7 +89,6 @@ void List__remove_node(List *list, void *data, int (*compare)(void *, void*), vo
         if (curr == list->head)
             list->tail = prev;
 
-        free_func(data);
         free(curr);
         list->size--;
     }

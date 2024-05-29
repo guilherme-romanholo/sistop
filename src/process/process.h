@@ -47,5 +47,6 @@ List *Process__read_instructions(FILE *, char *);
 Instruction *Process__parse_instruction(char *);
 void Process__cast_opcode(Instruction *, char *);
 void Process__finish(Process *);
+void Process_free_process(void *);
 
 #endif //SISTOP_PROCESS_H
