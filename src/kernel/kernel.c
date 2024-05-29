@@ -35,8 +35,6 @@ void Kernel__syscall(Syscall call, void *arg) {
             Process__finish((Process *)arg);
             Interface__refresh_process_win();
             break;
-        case INTERRUPT_PROCESS:
-            break;
         case REQ_LOAD_MEMORY:
             Memory__req_load_memory((List *)arg);
             Kernel__interrupt(FIN_LOAD_MEMORY, (List *)arg);
@@ -51,6 +49,9 @@ void Kernel__interrupt(Interruption interruption, void *arg) {
     switch (interruption) {
         case FIN_LOAD_MEMORY:
             Memory__fin_load_memory((List *) arg);
+            break;
+        case INTERRUPT_PROCESS:
+            Scheduler__interrupt_process();
             break;
     }
 }

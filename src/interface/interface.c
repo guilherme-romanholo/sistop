@@ -253,8 +253,6 @@ void Interface__update() {
 
         Interface__add_line(temp_win, 1, data);
 
-        //usleep(200);
-
         sem_post(&data_mutex);
     }
 }

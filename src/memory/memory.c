@@ -33,8 +33,11 @@ void Memory__fin_load_memory(List *memory_request) {
     Process *process = (Process *) memory_request->head->content;
 
     process->state = READY;
-    List__append(kernel->pcb, (void *)process);
 
+    if(kernel->pcb->size != 0)
+        kernel->scheduler->new_process = TRUE;
+
+    List__append(kernel->pcb, (void *)process);
     List__append(kernel->scheduler->sched_queue, (void *)process);
 
     Interface__refresh_kernel_win();

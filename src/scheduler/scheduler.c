@@ -15,6 +15,8 @@ Scheduler* Scheduler__create() {
     scheduler->sched_queue = List__create();
     scheduler->blocked_queue = List__create();
 
+    scheduler->new_process = FALSE;
+
     return scheduler;
 }
 
@@ -32,9 +34,7 @@ void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFl
         scheduler->sched_proc = NULL;
         Kernel__syscall(FINISH_PROCESS, (void *) process);
     } else if (flag == QUANTUM_END || flag == IO_REQUESTED) {
-        process->state = READY;
-        List__append(scheduler->sched_queue, (void *) process);
-        scheduler->sched_proc = NULL;
+        Kernel__interrupt(INTERRUPT_PROCESS, (void *) process);
     } else if (flag == SEMAPH_BLOCKED) {
         process->state = WAITING;
         List__append(scheduler->blocked_queue,(void *) process);
@@ -42,12 +42,19 @@ void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFl
     }
 }
 
+void Scheduler__interrupt_process() {
+    Process *process = kernel->scheduler->sched_proc;
+
+    process->state = READY;
+    List__append(kernel->scheduler->sched_queue, (void *) process);
+    kernel->scheduler->sched_proc = NULL;
+}
+
 /// Unlock waiting scheduler process
 /// \param scheduler Kernel scheduler
 /// \param process Process to be unlocked
 void Scheduler__unblock_process(Scheduler *scheduler, Process *process){
     List__remove_node(scheduler->blocked_queue, (void *) process, Utils__compare_process);
-    //Append the process in the scheduler queue again
     List__append(scheduler->sched_queue, (void *) process);
 }
 
@@ -98,6 +105,11 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
         for (i = Memory__fetch_instruction(page, (proc->pc % instr_per_page)); (i != NULL) && (quantum > 0) ; i = i->next) {
             sleep(1);
             instruction = (Instruction *) i->content;
+
+             if (kernel->scheduler->new_process == TRUE){
+                 kernel->scheduler->new_process = FALSE;
+                 return QUANTUM_END;
+             }
 
             switch (instruction->opcode) {
                 case EXEC:

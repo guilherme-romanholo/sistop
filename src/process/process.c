@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include "process.h"
 #include "../kernel/kernel.h"
 #include "../interface/interface.h"
-#include "../utils/utils.h"
+#include "../scheduler/scheduler.h"
 
 /// Create a process
 /// \param file File for synthetic process
