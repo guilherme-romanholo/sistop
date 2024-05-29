@@ -7,16 +7,23 @@
 List* List__create() {
     List *list = malloc(sizeof(List));
 
-    if (list == NULL) {
-        printf("Not memory to allocate list.");
-        exit(1);
-    }
-
     list->head = NULL;
     list->tail = NULL;
     list->size = 0;
 
     return list;
+}
+
+/// Creates a new node with content
+/// \param content Node content
+/// \return Created node
+Node* Node__create(void *content) {
+    Node *node = malloc(sizeof(Node));
+
+    node->content = content;
+    node->next = NULL;
+
+    return node;
 }
 
 /// Append a new node in the list
@@ -30,55 +37,33 @@ void List__append(List *list, void *content) {
 
     if (list->head == NULL) {
         list->head = node;
-    } else {
+    }
+
+    if (list->tail != NULL){
         list->tail->next = node;
-        node->prev = list->tail;
     }
 
     list->tail = node;
     list->size++;
 }
 
-/// Creates a new node with content
-/// \param content Node content
-/// \return Created node
-Node* Node__create(void *content) {
-    Node *node = malloc(sizeof(Node));
-
-    if (node == NULL) {
-        printf("Not memory to allocate node.");
-        return NULL;
-    }
-
-    node->content = content;
-    node->next = NULL;
-    node->prev = NULL;
-
-    return node;
-}
-
 /// Remove the first node from a list
 /// \param list List
 /// \return Node content
 void *List__remove_head(List *list) {
-    Node *aux = list->head;
+    if (list->head == NULL)
+        return NULL;
+
+    Node *removed = list->head;
     void *content = list->head->content;
 
-    if (list->head) {
+    list->head = list->head->next;
 
-        if (list->head->next)
-            list->head->next->prev = NULL;
-        else
-            list->tail = NULL;
+    if (list->head == NULL)
+        list->tail = NULL;
 
-        list->head = list->head->next;
-
-        aux->next = NULL;
-        aux->prev = NULL;
-        list->size--;
-    }
-
-    free(aux);
+    free(removed);
+    list->size--;
 
     return content;
 }
@@ -86,61 +71,40 @@ void *List__remove_head(List *list) {
 /// Remove node from list
 /// \param list List
 /// \param node Node to be removed
-void List__remove_node(List *list, Node *node) {
-    if(node != NULL)
-        return;
+void List__remove_node(List *list, void *data, int (*compare)(void *, void*), void(*free_func)(void *)) {
+    Node *curr = list->head;
+    Node *prev = NULL;
 
-    if(node->prev != NULL)
-        node->prev->next = node->next;
-    else if(list->head == node){
-        list->head = node->next;
-        list->head->prev = NULL;
+    while (curr != NULL && compare(curr->content, data)) {
+        prev = curr;
+        curr = curr->next;
     }
 
-    if (node->next != NULL)
-        node->next->prev = node->prev;
-    else if (list->tail == node){
-        list->tail = node->prev;
-        list->tail->next = NULL;
-    }
-
-    node->next = NULL;
-    node->prev = NULL;
-    free(node);
-    list->size--;
-}
-
-/// Remove the tail node from a list
-/// \param list List
-/// \return Tail Node
-Node *List__remove_tail(List *list) {
-    Node *aux = list->tail;
-
-    if (list->tail) {
-        if (list->tail->prev)
-            list->tail->prev->next = NULL;
+    if (curr != NULL) {
+        if (prev == NULL)
+            list->head = curr->next;
         else
-            list->head = NULL;
+            prev->next = curr->next;
 
-        list->tail = list->tail->prev;
+        if (curr == list->head)
+            list->tail = prev;
 
-        aux->next = NULL;
-        aux->prev = NULL;
+        free_func(data);
+        free(curr);
         list->size--;
     }
-
-    return aux;
 }
 
 /// Free the list
 /// \param list List
-void List__destroy(List *list){
-    Node *aux = list->head;
+void List__destroy(List *list, void(*free_func)(void *)){
+    Node *curr = list->head;
 
-    while (aux != NULL) {
-        Node *next = aux->next;
-        free(aux);
-        aux = next;
+    while (curr != NULL) {
+        Node *next = curr->next;
+        free_func(curr->content);
+        free(curr);
+        curr = next;
     }
 
     free(list);
