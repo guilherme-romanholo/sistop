@@ -85,39 +85,39 @@ void *List__remove_head(List *list) {
 /// \param list List
 /// \param node Node to be removed
 void List__remove_node(List *list, void *data, int (*compare)(void *, void*)) {
-    if (list->head == NULL) {
-        printf("List is empty.\n");
+    Node* current = list->head;
+    Node* previous = NULL;
+
+    // Search for the node to delete
+    while (current != NULL && compare(current->content, data)) {
+        previous = current;
+        current = current->next;
+    }
+
+    // If the node was not found, do nothing
+    if (current == NULL) {
         return;
     }
 
-    Node *current = list->head;
-    Node *prev = NULL;
-
-    // Traverse the list to find the node with the specified data
-    while (current != NULL) {
-        if (compare(current->content, data)) { // Assuming data pointers are directly comparable
-            // Node found, remove it
-            if (prev == NULL) {
-                // Node to be removed is the head
-                list->head = current->next;
-                if (list->head == NULL) {
-                    // If the list becomes empty after removal
-                    list->tail = NULL;
-                }
-            } else {
-                prev->next = current->next;
-                if (current == list->tail) {
-                    // If the node to be removed is the tail
-                    list->tail = prev;
-                }
-            }
-            free(current);
-            list->size--;
-            return;
-        }
-        prev = current;
-        current = current->next;
+    // If the node is the head
+    if (current == list->head) {
+        list->head = current->next;
     }
+
+    // If the node is the tail
+    if (current == list->tail) {
+        list->tail = previous;
+    }
+
+    // If the node is in the middle
+    if (previous != NULL) {
+        previous->next = current->next;
+    }
+
+    // Free the memory of the deleted node
+    free(current);
+
+    list->size--;
 }
 
 /// Free the list
