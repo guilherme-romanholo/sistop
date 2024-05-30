@@ -1,6 +1,5 @@
 #include "kernel.h"
-#include "../utils/list.h"
-#include "../scheduler/scheduler.h"
+#include "../interface/interface.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -34,8 +33,7 @@ void Kernel__syscall(Syscall call, void *arg) {
             break;
         case FINISH_PROCESS:
             Process__finish((Process *)arg);
-            break;
-        case INTERRUPT_PROCESS:
+            Interface__refresh_process_win();
             break;
         case REQ_LOAD_MEMORY:
             Memory__req_load_memory((List *)arg);
@@ -51,6 +49,9 @@ void Kernel__interrupt(Interruption interruption, void *arg) {
     switch (interruption) {
         case FIN_LOAD_MEMORY:
             Memory__fin_load_memory((List *) arg);
+            break;
+        case INTERRUPT_PROCESS:
+            Scheduler__interrupt_process();
             break;
     }
 }

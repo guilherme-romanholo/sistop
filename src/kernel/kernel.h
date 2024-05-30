@@ -9,13 +9,13 @@
 typedef enum {
     CREATE_PROCESS = 1,
     FINISH_PROCESS = 2,
-    INTERRUPT_PROCESS = 3,
-    REQ_LOAD_MEMORY = 4,
+    REQ_LOAD_MEMORY = 3,
 } Syscall;
 
 /// Interruption enumeration
 typedef enum {
-    FIN_LOAD_MEMORY = 10
+    FIN_LOAD_MEMORY = 4,
+    INTERRUPT_PROCESS = 5,
 } Interruption;
 
 /// Kernel struct

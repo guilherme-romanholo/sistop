@@ -84,7 +84,6 @@ void Semaph__semaphore_V(Semaphore *sem) {
     if (sem->val <= 0) {
         if(sem->waiters) {
             Process *process = (Process *) List__remove_head(sem->waiters);
-
             Scheduler__unblock_process(kernel->scheduler, process);
         }
     }

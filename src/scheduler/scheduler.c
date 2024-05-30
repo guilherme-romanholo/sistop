@@ -14,6 +14,7 @@ Scheduler* Scheduler__create() {
     scheduler->sched_proc = NULL;
     scheduler->sched_queue = List__create();
     scheduler->blocked_queue = List__create();
+    scheduler->new_process = FALSE;
 
     return scheduler;
 }
@@ -23,43 +24,48 @@ Scheduler* Scheduler__create() {
 /// \param scheduler Scheduler
 /// \param flag Process flag
 void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFlag flag){
-    if (flag == SCHEDULE_PROCESS) {
-        process->state = RUNNING;
-        scheduler->quantum = 5000 / process->priority;
-        scheduler->sched_proc = process;
-    } else if (flag == PROCESS_END) {
-        process->state = TERMINATED;
-        scheduler->sched_proc = NULL;
-        kernel->pcb->size--;
-    } else if (flag == QUANTUM_END || flag == IO_REQUESTED) {
-        process->state = READY;
-        List__append(scheduler->sched_queue, (void *) process);
-        scheduler->sched_proc = NULL;
-    } else if (flag == SEMAPH_BLOCKED) {
-        process->state = WAITING;
-        List__append(scheduler->blocked_queue,(void *) process);
-        scheduler->sched_proc = NULL;
+    switch (flag) {
+        case SCHEDULE_PROCESS:
+            process->state = RUNNING;
+            scheduler->quantum = 5000 / process->priority;
+            scheduler->sched_proc = process;
+            break;
+
+        case PROCESS_END:
+            process->state = TERMINATED;
+            scheduler->sched_proc = NULL;
+            Kernel__syscall(FINISH_PROCESS, (void *) process);
+            break;
+
+        case QUANTUM_END:
+        case IO_REQUESTED:
+            Kernel__interrupt(INTERRUPT_PROCESS, (void *) process);
+            break;
+
+        case SEMAPH_BLOCKED:
+            process->state = WAITING;
+            List__append(scheduler->blocked_queue,(void *) process);
+            scheduler->sched_proc = NULL;
+            break;
     }
+}
+
+void Scheduler__interrupt_process() {
+    Process *process = kernel->scheduler->sched_proc;
+
+    process->state = READY;
+    List__append(kernel->scheduler->sched_queue, (void *) process);
+    kernel->scheduler->sched_proc = NULL;
 }
 
 /// Unlock waiting scheduler process
 /// \param scheduler Kernel scheduler
 /// \param process Process to be unlocked
 void Scheduler__unblock_process(Scheduler *scheduler, Process *process){
-    Process *proc_aux;
-    //printf("Entrando na função semV\n\n");
-    //Search and remove the process from the blocked queue
-    for (Node *aux = scheduler->blocked_queue->head; aux != NULL; aux = aux->next) {
-        proc_aux = (Process *) aux->content;
+    List__remove_node(scheduler->blocked_queue, (void *) process, Utils__compare_process);
 
-        if(proc_aux->pid == process->pid) {
-            //printf("Removendo processo %d da lista de bloqueados\n\n", process->pid);
-            List__remove_node(scheduler->blocked_queue, aux);
-        }
-    }
-
-    //Append the process in the scheduler queue again
-    List__append(scheduler->sched_queue, (void *) process);
+    if (!List__contains(scheduler->sched_queue, (void *) process, Utils__compare_process))
+        List__append(scheduler->sched_queue, (void *) process);
 }
 
 /// Run the scheduler in CPU
@@ -71,6 +77,7 @@ void Scheduler__cpu_run(){
     while (!kernel);
 
     while (1) {
+
         if (kernel->scheduler->sched_proc == NULL){
 
             if (kernel->pcb->size != 0) {
@@ -81,7 +88,7 @@ void Scheduler__cpu_run(){
         } else {
             segment = Memory__fetch_segment(kernel->scheduler->sched_proc->segment_id);
             page = (Page *) segment->pages->head->content;
-            
+
             flag = Scheduler__exec_process(segment, kernel->scheduler->sched_proc,
                                            kernel->scheduler->quantum, page->instr_per_page,
                                            page->total_instructions);
@@ -106,8 +113,13 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
         page->used_bit = 1;
 
         for (i = Memory__fetch_instruction(page, (proc->pc % instr_per_page)); (i != NULL) && (quantum > 0) ; i = i->next) {
-            sleep(2);
+            sleep(1);
             instruction = (Instruction *) i->content;
+
+             if (kernel->scheduler->new_process == TRUE){
+                 kernel->scheduler->new_process = FALSE;
+                 return QUANTUM_END;
+             }
 
             switch (instruction->opcode) {
                 case EXEC:
@@ -117,7 +129,6 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
                         Interface__send_data(sched_win, SCHED_EXEC_FMT, proc->pid, instruction->value, 0);
                     else
                         Interface__send_data(sched_win, SCHED_EXEC_FMT, proc->pid, instruction->value, quantum);
-                        
                     break;
 
                 case SEM_P:

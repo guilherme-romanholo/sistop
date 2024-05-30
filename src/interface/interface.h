@@ -8,7 +8,7 @@
 #define KERNEL_MEMORY_FMT "Remaining Memory: %d bytes."
 #define KERNEL_SEMAPH_FMT "Semaphores: %s"
 
-#define PROC_INTERFACE_FMT "PID %d, Name: %s, Seg ID: %d, State: %s, Priority: %d, PC: %d"
+#define PROC_INTERFACE_FMT "PID %d, Name: %s, Seg ID: %d, Priority: %d, PC: %d, State: %s"
 #define MEMORY_INTERFACE_FMT "Segment ID: %d, Segment Size: %d Kb, Num Pages: %d."
 
 #define SCHED_PRINT_FMT "PID: %d, Print: %d ut, Remaining quantum: %d ut."

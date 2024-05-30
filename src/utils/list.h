@@ -5,22 +5,23 @@
 typedef struct node {
     void *content;
     struct node *next;
-    struct node *prev;
 } Node;
 
 /// List struct
-typedef struct list {
+typedef struct {
     Node *head;
     Node *tail;
     int size;
 } List;
 
 List* List__create();
-void List__append(List *, void *);
 Node* Node__create(void *);
-void *List__remove_head(List *list);
-void List__remove_node(List *list, Node *node);
-Node *List__remove_tail(List *list);
-void List__destroy(List *list);
+void List__destroy(List *, void(*)(void *));
+
+void List__append(List *, void *);
+void *List__remove_head(List *);
+void List__remove_node(List *, void *, int (*)(void *, void*));
+
+int List__contains(List *list, void *data, int (*compare)(void *, void *));
 
 #endif //SISTOP_LIST_H
