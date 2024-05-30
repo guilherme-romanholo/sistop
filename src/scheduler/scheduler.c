@@ -14,7 +14,6 @@ Scheduler* Scheduler__create() {
     scheduler->sched_proc = NULL;
     scheduler->sched_queue = List__create();
     scheduler->blocked_queue = List__create();
-
     scheduler->new_process = FALSE;
 
     return scheduler;
@@ -25,20 +24,29 @@ Scheduler* Scheduler__create() {
 /// \param scheduler Scheduler
 /// \param flag Process flag
 void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFlag flag){
-    if (flag == SCHEDULE_PROCESS) {
-        process->state = RUNNING;
-        scheduler->quantum = 5000 / process->priority;
-        scheduler->sched_proc = process;
-    } else if (flag == PROCESS_END) {
-        process->state = TERMINATED;
-        scheduler->sched_proc = NULL;
-        Kernel__syscall(FINISH_PROCESS, (void *) process);
-    } else if (flag == QUANTUM_END || flag == IO_REQUESTED) {
-        Kernel__interrupt(INTERRUPT_PROCESS, (void *) process);
-    } else if (flag == SEMAPH_BLOCKED) {
-        process->state = WAITING;
-        List__append(scheduler->blocked_queue,(void *) process);
-        scheduler->sched_proc = NULL;
+    switch (flag) {
+        case SCHEDULE_PROCESS:
+            process->state = RUNNING;
+            scheduler->quantum = 5000 / process->priority;
+            scheduler->sched_proc = process;
+            break;
+
+        case PROCESS_END:
+            process->state = TERMINATED;
+            scheduler->sched_proc = NULL;
+            Kernel__syscall(FINISH_PROCESS, (void *) process);
+            break;
+
+        case QUANTUM_END:
+        case IO_REQUESTED:
+            Kernel__interrupt(INTERRUPT_PROCESS, (void *) process);
+            break;
+
+        case SEMAPH_BLOCKED:
+            process->state = WAITING;
+            List__append(scheduler->blocked_queue,(void *) process);
+            scheduler->sched_proc = NULL;
+            break;
     }
 }
 
@@ -55,7 +63,9 @@ void Scheduler__interrupt_process() {
 /// \param process Process to be unlocked
 void Scheduler__unblock_process(Scheduler *scheduler, Process *process){
     List__remove_node(scheduler->blocked_queue, (void *) process, Utils__compare_process);
-    List__append(scheduler->sched_queue, (void *) process);
+
+    if (!List__contains(scheduler->sched_queue, (void *) process, Utils__compare_process))
+        List__append(scheduler->sched_queue, (void *) process);
 }
 
 /// Run the scheduler in CPU

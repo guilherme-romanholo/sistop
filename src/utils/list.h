@@ -22,4 +22,6 @@ void List__append(List *, void *);
 void *List__remove_head(List *);
 void List__remove_node(List *, void *, int (*)(void *, void*));
 
+int List__contains(List *list, void *data, int (*compare)(void *, void *));
+
 #endif //SISTOP_LIST_H

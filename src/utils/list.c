@@ -26,6 +26,17 @@ Node* Node__create(void *content) {
     return node;
 }
 
+int List__contains(List *list, void *data, int (*compare)(void *, void *)) {
+    Node *current = list->head;
+    while (current != NULL) {
+        if (compare(current->content, data)) { // Assuming data pointers are directly comparable
+            return 1; // Data already exists in the list
+        }
+        current = current->next;
+    }
+    return 0; // Data not found in the list
+}
+
 /// Append a new node in the list
 /// \param list List to append node
 /// \param content Node content
@@ -51,19 +62,21 @@ void List__append(List *list, void *content) {
 /// \param list List
 /// \return Node content
 void *List__remove_head(List *list) {
-    if (list->head == NULL)
+    if (list->head == NULL) {
+        printf("List is empty.\n");
         return NULL;
+    }
 
-    Node *removed = list->head;
+    Node *temp = list->head;
     void *content = list->head->content;
-
     list->head = list->head->next;
+    free(temp);
 
-    if (list->head == NULL)
-        list->tail = NULL;
-
-    free(removed);
     list->size--;
+
+    if (list->head == NULL) {
+        list->tail = NULL;
+    }
 
     return content;
 }
@@ -72,25 +85,38 @@ void *List__remove_head(List *list) {
 /// \param list List
 /// \param node Node to be removed
 void List__remove_node(List *list, void *data, int (*compare)(void *, void*)) {
-    Node *curr = list->head;
-    Node *prev = NULL;
-
-    while (curr != NULL && compare(curr->content, data)) {
-        prev = curr;
-        curr = curr->next;
+    if (list->head == NULL) {
+        printf("List is empty.\n");
+        return;
     }
 
-    if (curr != NULL) {
-        if (prev == NULL)
-            list->head = curr->next;
-        else
-            prev->next = curr->next;
+    Node *current = list->head;
+    Node *prev = NULL;
 
-        if (curr == list->head)
-            list->tail = prev;
-
-        free(curr);
-        list->size--;
+    // Traverse the list to find the node with the specified data
+    while (current != NULL) {
+        if (compare(current->content, data)) { // Assuming data pointers are directly comparable
+            // Node found, remove it
+            if (prev == NULL) {
+                // Node to be removed is the head
+                list->head = current->next;
+                if (list->head == NULL) {
+                    // If the list becomes empty after removal
+                    list->tail = NULL;
+                }
+            } else {
+                prev->next = current->next;
+                if (current == list->tail) {
+                    // If the node to be removed is the tail
+                    list->tail = prev;
+                }
+            }
+            free(current);
+            list->size--;
+            return;
+        }
+        prev = current;
+        current = current->next;
     }
 }
 

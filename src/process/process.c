@@ -4,7 +4,6 @@
 #include "process.h"
 #include "../kernel/kernel.h"
 #include "../interface/interface.h"
-#include "../scheduler/scheduler.h"
 
 /// Create a process
 /// \param file File for synthetic process
