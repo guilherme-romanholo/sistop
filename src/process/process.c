@@ -10,11 +10,16 @@
 void Process__create(const char *file) {
     char buffer[BUFFER_SIZE];
     FILE *fp = fopen(file, "r");
+
+    if (!fp)
+        return;
+
     Process *process = malloc(sizeof(Process));
 
     process->pid = kernel->proc_id_counter++;
     process->state = NEW;
     process->pc = 0;
+
 
     fgets(buffer, BUFFER_SIZE, fp);
     process->name = strdup(buffer);
