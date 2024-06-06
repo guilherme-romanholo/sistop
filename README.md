@@ -12,6 +12,6 @@
 
 #### Dependencies
 
-- Make
+- Cmake
 - GCC
 - Ncurses
