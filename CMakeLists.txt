@@ -29,6 +29,9 @@ add_executable(sistop
         ./src/interface/interface.h
         ./src/scheduler/scheduler.c
         ./src/scheduler/scheduler.h
+        ./src/disk/disk.c
+        ./src/disk/disk.h
+        src/disk/disk.h
 )
 
 # Link libraries

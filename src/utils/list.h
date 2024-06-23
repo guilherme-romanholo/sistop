@@ -18,6 +18,7 @@ List* List__create();
 Node* Node__create(void *);
 void List__destroy(List *, void(*)(void *));
 
+// TODO: Create two ordered insert
 void List__append(List *, void *);
 void *List__remove_head(List *);
 void List__remove_node(List *, void *, int (*)(void *, void*));

@@ -37,6 +37,7 @@ void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFl
             Kernel__syscall(FINISH_PROCESS, (void *) process);
             break;
 
+        // TODO: Print -> Quantum_end (Interrupt proc) | Read/Write -> IO_request (Disk request)
         case QUANTUM_END:
         case IO_REQUESTED:
             Kernel__interrupt(INTERRUPT_PROCESS, (void *) process);
