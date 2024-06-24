@@ -1,8 +1,8 @@
 #ifndef SISTOP_KERNEL_H
 #define SISTOP_KERNEL_H
 
+#include "../disk/disk.h"
 #include "../memory/memory.h"
-#include "../semaph/semaph.h"
 #include "../scheduler/scheduler.h"
 
 /// Syscall enumeration
@@ -10,6 +10,7 @@ typedef enum {
     CREATE_PROCESS = 1,
     FINISH_PROCESS = 2,
     REQ_LOAD_MEMORY = 3,
+    DISK_REQUEST = 4,
 } Syscall;
 
 /// Interruption enumeration
@@ -23,6 +24,7 @@ typedef struct {
     int proc_id_counter;
     long remaining_memory;
     Scheduler *scheduler;
+    Disk *disk;
     List *pcb;
     List *semaph_table;
     List *segment_table;

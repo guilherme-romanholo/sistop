@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "../disk/disk.h"
 #include "../memory/memory.h"
 
 int Utils__compare_segment(void *x, void *y) {
@@ -29,4 +30,24 @@ int Utils__compare_page(void *x, void *y) {
         return 0;
     else
         return 1;
+}
+
+int Utils__compare_tracks_up(void *x, void *y) {
+    DiskRequest *d1 = (DiskRequest *) x;
+    DiskRequest *d2 = (DiskRequest *) y;
+
+    if (d1->track > d2->track)
+        return 1;
+    else
+        return 0;
+}
+
+int Utils__compare_tracks_down(void *x, void *y) {
+    DiskRequest *d1 = (DiskRequest *) x;
+    DiskRequest *d2 = (DiskRequest *) y;
+
+    if (d1->track < d2->track)
+        return 1;
+    else
+        return 0;
 }

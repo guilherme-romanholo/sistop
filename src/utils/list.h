@@ -22,7 +22,7 @@ void List__destroy(List *, void(*)(void *));
 void List__append(List *, void *);
 void *List__remove_head(List *);
 void List__remove_node(List *, void *, int (*)(void *, void*));
-
+void List__ordered_insert(List *list, void *content, int (*compare)(void *, void *));
 int List__contains(List *list, void *data, int (*compare)(void *, void *));
 
 #endif //SISTOP_LIST_H

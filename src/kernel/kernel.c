@@ -21,6 +21,7 @@ void Kernel__create() {
     kernel->semaph_table = List__create();
     kernel->pcb = List__create();
     kernel->scheduler = Scheduler__create();
+    kernel->disk = Disk__create();
 }
 
 /// Make a syscall
@@ -38,6 +39,9 @@ void Kernel__syscall(Syscall call, void *arg) {
         case REQ_LOAD_MEMORY:
             Memory__req_load_memory((List *)arg);
             Kernel__interrupt(FIN_LOAD_MEMORY, (List *)arg);
+            break;
+        case DISK_REQUEST:
+            Disk__request((DiskRequest *) arg);
             break;
     }
 }

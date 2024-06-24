@@ -14,6 +14,7 @@ Interface *kernel_win;
 Interface *mem_win;
 Interface *proc_win;
 Interface *sched_win;
+Interface *disk_win;
 
 Interface *temp_win;
 char data[BUFFER_SIZE];
@@ -40,23 +41,23 @@ void Interface__init() {
 
     // Create kernel interface
     kernel_win = Interface__create_window(
-            height / 4,
+            height / 4 - 1,
             width / 2,
             height / 4, 0,
             "KERNEL", FALSE);
 
     // Create memory interface
     mem_win = Interface__create_window(
-            (height / 2) + 1,
+            (height / 4),
             width / 2,
             (height / 2) - 1, 0,
             "MEMORY",TRUE);
 
     // Create process interface
     proc_win = Interface__create_window(
-            (height / 2) - 1,
+            (height / 4) + 1,
             width / 2,
-            0, (width / 2),
+            (height / 2) + (height / 4) - 1, 0,
             "PROCESS",TRUE);
 
     // Create scheduler interface
@@ -65,6 +66,13 @@ void Interface__init() {
             width / 2,
             (height / 2) - 1, (width / 2),
             "SCHEDULER",TRUE);
+
+    // Create scheduler interface
+    disk_win = Interface__create_window(
+            (height / 2) - 1,
+            width / 2,
+            0, (width / 2),
+            "DISK",TRUE);
 
     sem_init(&update_mutex, 0, 0);
     sem_init(&data_mutex, 0, 1);
