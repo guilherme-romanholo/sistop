@@ -2,6 +2,7 @@
 #define SISTOP_KERNEL_H
 
 #include "../disk/disk.h"
+#include "../semaph/semaph.h"
 #include "../memory/memory.h"
 #include "../scheduler/scheduler.h"
 
