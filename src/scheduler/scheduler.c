@@ -2,6 +2,7 @@
 #include <string.h>
 #include <math.h>
 #include "../kernel/kernel.h"
+#include "../disk/disk.h"
 #include "../interface/interface.h"
 #include "scheduler.h"
 #include <unistd.h>
@@ -23,7 +24,7 @@ Scheduler* Scheduler__create() {
 /// \param process Queue head process
 /// \param scheduler Scheduler
 /// \param flag Process flag
-void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFlag flag){
+void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFlag flag, int IO_REQUESTED_Track){
     switch (flag) {
         case SCHEDULE_PROCESS:
             process->state = RUNNING;
@@ -39,8 +40,19 @@ void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFl
 
         // TODO: Print -> Quantum_end (Interrupt proc) | Read/Write -> IO_request (Disk request)
         case QUANTUM_END:
-        case IO_REQUESTED:
             Kernel__interrupt(INTERRUPT_PROCESS, (void *) process);
+            break;
+
+        case IO_REQUESTED:
+            process->state = WAITING;
+            List__append(scheduler->blocked_queue,(void *) process);
+            scheduler->sched_proc = NULL;
+            
+            DiskRequest *aux = malloc (sizeof(DiskRequest));
+            aux->process = process;
+            aux->track = IO_REQUESTED_Track;
+
+            Disk__request(aux);
             break;
 
         case SEMAPH_BLOCKED:
@@ -74,16 +86,19 @@ void Scheduler__cpu_run(){
     Segment *segment;
     Page *page;
     SchedFlag flag;
+    int instruction_value = 0;
 
     while (!kernel);
+
+    while(!kernel->scheduler);
 
     while (1) {
 
         if (kernel->scheduler->sched_proc == NULL){
 
-            if (kernel->pcb->size != 0) {
+            if (kernel->pcb->size != 0 && kernel->scheduler->sched_queue->size != 0) {
                 Process* process = (Process *) List__remove_head(kernel->scheduler->sched_queue);
-                Scheduler__schedule_process(process, kernel->scheduler, SCHEDULE_PROCESS);
+                Scheduler__schedule_process(process, kernel->scheduler, SCHEDULE_PROCESS, 0);
             }
 
         } else {
@@ -92,14 +107,14 @@ void Scheduler__cpu_run(){
 
             flag = Scheduler__exec_process(segment, kernel->scheduler->sched_proc,
                                            kernel->scheduler->quantum, page->instr_per_page,
-                                           page->total_instructions);
+                                           page->total_instructions, &instruction_value);
 
-            Scheduler__schedule_process(kernel->scheduler->sched_proc, kernel->scheduler, flag);
+            Scheduler__schedule_process(kernel->scheduler->sched_proc, kernel->scheduler, flag, instruction_value);
         }
     }
 }
 
-int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_per_page, int total_instr) {
+int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_per_page, int total_instr, int *instruction_value) {
     int blocked, page_id;
     SchedFlag flag;
     Node *p, *i;
@@ -166,6 +181,7 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
                 case READ:
                     quantum = 0;
                     proc->pc++;
+                    *instruction_value = instruction->value;
                     flag = IO_REQUESTED;
                     Interface__send_data(sched_win, SCHED_READ_FMT, proc->pid, instruction->value, quantum);
                     break;
@@ -173,6 +189,7 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
                 case WRITE:
                     quantum = 0;
                     proc->pc++;
+                    *instruction_value = instruction->value;
                     flag = IO_REQUESTED;
                     Interface__send_data(sched_win, SCHED_WRITE_FMT, proc->pid, instruction->value, quantum);
                     break;
@@ -190,6 +207,7 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
 
     }
 
+    
     if (p == NULL && proc->pc >= total_instr)
         flag = PROCESS_END;
 

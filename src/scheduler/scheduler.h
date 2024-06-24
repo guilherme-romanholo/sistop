@@ -21,10 +21,10 @@ typedef enum {
 } SchedFlag;
 
 Scheduler *Scheduler__create();
-void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFlag flag);
+void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFlag flag, int IO_REQUEST_Track);
 void Scheduler__unblock_process(Scheduler *scheduler, Process *process);
 void Scheduler__cpu_run();
-int Scheduler__exec_process(Segment *, Process *, int, int, int);
+int Scheduler__exec_process(Segment *, Process *, int, int, int, int *);
 void Scheduler__interrupt_process();
 
 #endif //SISTOP_SCHEDULER_H
