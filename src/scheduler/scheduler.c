@@ -174,6 +174,7 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
                 case PRINT:
                     quantum = 0;
                     proc->pc++;
+                    *instruction_value = instruction->value;
                     flag = IO_REQUESTED;
                     Interface__send_data(sched_win, SCHED_PRINT_FMT, proc->pid, instruction->value, quantum);
                     break;

@@ -1,7 +1,9 @@
 #include "disk.h"
 #include "../utils/list.h"
 #include "../kernel/kernel.h"
+#include "../scheduler/scheduler.h"
 #include <stdlib.h>
+#include <unistd.h>
 
 Disk *Disk__create() {
     Disk *disk = malloc(sizeof(Disk));
@@ -18,6 +20,8 @@ void Disk__request(DiskRequest *disk_request) {
     if (kernel->disk->current == NULL) {
         // Caso não tenha nenhuma E/S faz do novo
         kernel->disk->current = disk_request;
+        //Por padrão insere na lista de up
+        List__ordered_insert(kernel->disk->uplist, disk_request, Utils__compare_tracks_up);
 
     } else if (kernel->disk->current->track < disk_request->track) {
         // Caso já tenha, tenta inserir na lista de subida
@@ -32,19 +36,35 @@ void Disk__request(DiskRequest *disk_request) {
 
 void Disk__elevator() {
     while (!kernel);
+    while(!kernel->disk);
 
+    sleep(10);
     while (1){
 
         while (kernel->disk->uplist->size != 0){
-            List__remove_head(kernel->disk->uplist->head);
-            //kernel->disk->uplist->head = kernel->disk->uplist->head->next;
+            //Basicamente ele pega a cabeça da lista de up e `faz` a entrada e saída, depois ele pula pro próximo da lista, que seria a nova cabeça
+            kernel->disk->current = (DiskRequest *) List__remove_head(kernel->disk->uplist);
+
+            printf("Fazendo IO do processo %d na trilha %d\n", kernel->disk->current->process->pid, kernel->disk->current->track);
+            sleep(3);
+
+            //Depois de fazer a E/S, desbloqueia o processo e faz tudo de novo até a lista ficar vazia
+            Scheduler__unblock_process(kernel->scheduler, kernel->disk->current->process);
+
         }
+
+        //Quando a lista de up termina, vai pra head da lista de down e faz o mesmo processo até a lista ficar vazia, assim ele fica subindo e descendo
         kernel->disk->current = kernel->disk->downlist->head; // Interliga o final da Uplist com o começo da Downlist
 
         while (kernel->disk->downlist->size != 0){
-            List__remove_head(kernel->disk->downlist->head);
-            //kernel->disk->downlist->head = kernel->disk->downlist->head->next;
+            kernel->disk->current = (DiskRequest *) List__remove_head(kernel->disk->downlist->head);
+            
+            printf("Fazendo IO do processo %d na trilha %d\n", kernel->disk->current->process->pid, kernel->disk->current->track);
+            sleep(3);
+
+            Scheduler__unblock_process(kernel->scheduler, kernel->disk->current->process);
         }
+        //Quando termina a lista de down, volta pra head da lista de up
         kernel->disk->current = kernel->disk->uplist->head;
     }
 }
