@@ -43,16 +43,20 @@ void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFl
             Kernel__interrupt(INTERRUPT_PROCESS, (void *) process);
             break;
 
-        case IO_REQUESTED:
+        case IO_REQUESTED_PRINT:
+            Kernel__syscall(PRINT_REQUEST, (void *) process);
+            break;
+
+        case IO_REQUESTED_DISK:
             process->state = WAITING;
             List__append(scheduler->blocked_queue,(void *) process);
             scheduler->sched_proc = NULL;
-            
+
             DiskRequest *aux = malloc (sizeof(DiskRequest));
             aux->process = process;
             aux->track = IO_REQUESTED_Track;
 
-            Disk__request(aux);
+            Kernel__syscall(DISK_REQUEST, (void *) aux);
             break;
 
         case SEMAPH_BLOCKED:
@@ -89,7 +93,6 @@ void Scheduler__cpu_run(){
     int instruction_value = 0;
 
     while (!kernel);
-
     while(!kernel->scheduler);
 
     while (1) {
@@ -175,24 +178,24 @@ int Scheduler__exec_process(Segment *seg, Process *proc, int quantum, int instr_
                     quantum = 0;
                     proc->pc++;
                     *instruction_value = instruction->value;
-                    flag = IO_REQUESTED;
-                    Interface__send_data(sched_win, SCHED_PRINT_FMT, proc->pid, instruction->value, quantum);
+                    flag = IO_REQUESTED_PRINT;
+                    Interface__send_data(sched_win, SCHED_PRINT_FMT, proc->pid, instruction->value);
                     break;
 
                 case READ:
                     quantum = 0;
                     proc->pc++;
                     *instruction_value = instruction->value;
-                    flag = IO_REQUESTED;
-                    Interface__send_data(sched_win, SCHED_READ_FMT, proc->pid, instruction->value, quantum);
+                    flag = IO_REQUESTED_DISK;
+                    Interface__send_data(sched_win, SCHED_READ_FMT, proc->pid, instruction->value);
                     break;
 
                 case WRITE:
                     quantum = 0;
                     proc->pc++;
                     *instruction_value = instruction->value;
-                    flag = IO_REQUESTED;
-                    Interface__send_data(sched_win, SCHED_WRITE_FMT, proc->pid, instruction->value, quantum);
+                    flag = IO_REQUESTED_DISK;
+                    Interface__send_data(sched_win, SCHED_WRITE_FMT, proc->pid, instruction->value);
                     break;
             }
 

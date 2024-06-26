@@ -14,7 +14,7 @@ Interface *kernel_win;
 Interface *mem_win;
 Interface *proc_win;
 Interface *sched_win;
-Interface *disk_win;
+Interface *io_win;
 
 Interface *temp_win;
 char data[BUFFER_SIZE];
@@ -68,16 +68,19 @@ void Interface__init() {
             "SCHEDULER",TRUE);
 
     // Create scheduler interface
-    disk_win = Interface__create_window(
+    io_win = Interface__create_window(
             (height / 2) - 1,
             width / 2,
             0, (width / 2),
-            "DISK",TRUE);
+            "I/O",TRUE);
 
     sem_init(&update_mutex, 0, 0);
     sem_init(&data_mutex, 0, 1);
 
     pthread_create(&thread, NULL, (void *) Interface__update, NULL);
+
+    //Interface__send_data(kernel_win, "Initializing kernel ...");
+    //sleep(3);
 
     Interface__refresh_kernel_win();
     Interface__refresh_process_win();

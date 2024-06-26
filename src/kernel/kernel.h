@@ -12,12 +12,15 @@ typedef enum {
     FINISH_PROCESS = 2,
     REQ_LOAD_MEMORY = 3,
     DISK_REQUEST = 4,
+    PRINT_REQUEST = 5,
 } Syscall;
 
 /// Interruption enumeration
 typedef enum {
-    FIN_LOAD_MEMORY = 4,
-    INTERRUPT_PROCESS = 5,
+    FIN_LOAD_MEMORY = 6,
+    INTERRUPT_PROCESS = 7,
+    DISK_FINISH = 8,
+    PRINT_FINISH = 9,
 } Interruption;
 
 /// Kernel struct

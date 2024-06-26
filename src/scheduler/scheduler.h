@@ -15,9 +15,10 @@ typedef struct {
 typedef enum {
     SCHEDULE_PROCESS = 10,
     PROCESS_END = 11,
-    IO_REQUESTED = 12,
-    QUANTUM_END = 13,
-    SEMAPH_BLOCKED = 14
+    IO_REQUESTED_DISK = 12,
+    IO_REQUESTED_PRINT = 13,
+    QUANTUM_END = 14,
+    SEMAPH_BLOCKED = 15
 } SchedFlag;
 
 Scheduler *Scheduler__create();

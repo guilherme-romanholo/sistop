@@ -17,6 +17,9 @@ typedef struct disk {
 
 Disk *Disk__create();
 void Disk__request();
+void Disk__finish_request();
 void Disk__elevator();
+void Print__request(Process *);
+void Print__finish_request(Process *);
 
 #endif //SISTOP_DISK_H

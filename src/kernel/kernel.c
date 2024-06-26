@@ -43,6 +43,9 @@ void Kernel__syscall(Syscall call, void *arg) {
         case DISK_REQUEST:
             Disk__request((DiskRequest *) arg);
             break;
+        case PRINT_REQUEST:
+            Print__request((Process *) arg);
+            break;
     }
 }
 
@@ -56,6 +59,12 @@ void Kernel__interrupt(Interruption interruption, void *arg) {
             break;
         case INTERRUPT_PROCESS:
             Scheduler__interrupt_process();
+            break;
+        case DISK_FINISH:
+            Disk__finish_request();
+            break;
+        case PRINT_FINISH:
+            Print__finish_request((Process *) arg);
             break;
     }
 }
