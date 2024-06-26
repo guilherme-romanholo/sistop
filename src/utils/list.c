@@ -37,6 +37,31 @@ int List__contains(List *list, void *data, int (*compare)(void *, void *)) {
     return 0; // Data not found in the list
 }
 
+void List__ordered_insert(List *list, void *content, int (*compare)(void *, void *)) {
+    Node *new_node = Node__create(content);
+    if (list->head == NULL || compare(content, list->head->content) <= 0) {
+        // Inserir no início da lista
+        new_node->next = list->head;
+        list->head = new_node;
+        if (list->tail == NULL) {
+            list->tail = new_node;
+        }
+    } else {
+        // Procurar a posição correta para inserção
+        Node *current = list->head;
+        while (current->next != NULL && compare(content, current->next->content) > 0) {
+            current = current->next;
+        }
+        new_node->next = current->next;
+        current->next = new_node;
+        if (new_node->next == NULL) {
+            list->tail = new_node;
+        }
+    }
+    list->size++;
+}
+
+
 /// Append a new node in the list
 /// \param list List to append node
 /// \param content Node content
@@ -83,7 +108,7 @@ void *List__remove_head(List *list) {
 
 /// Remove node from list
 /// \param list List
-/// \param node Node to be removed
+/// \param data Data
 void List__remove_node(List *list, void *data, int (*compare)(void *, void*)) {
     Node* current = list->head;
     Node* previous = NULL;

@@ -15,16 +15,17 @@ typedef struct {
 typedef enum {
     SCHEDULE_PROCESS = 10,
     PROCESS_END = 11,
-    IO_REQUESTED = 12,
-    QUANTUM_END = 13,
-    SEMAPH_BLOCKED = 14
+    IO_REQUESTED_DISK = 12,
+    IO_REQUESTED_PRINT = 13,
+    QUANTUM_END = 14,
+    SEMAPH_BLOCKED = 15
 } SchedFlag;
 
 Scheduler *Scheduler__create();
-void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFlag flag);
+void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFlag flag, int IO_REQUEST_Track);
 void Scheduler__unblock_process(Scheduler *scheduler, Process *process);
 void Scheduler__cpu_run();
-int Scheduler__exec_process(Segment *, Process *, int, int, int);
+int Scheduler__exec_process(Segment *, Process *, int, int, int, int *);
 void Scheduler__interrupt_process();
 
 #endif //SISTOP_SCHEDULER_H

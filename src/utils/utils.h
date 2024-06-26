@@ -11,5 +11,7 @@
 int Utils__compare_segment(void *, void *);
 int Utils__compare_process(void *, void *);
 int Utils__compare_page(void *, void *);
+int Utils__compare_tracks_down(void *, void *);
+int Utils__compare_tracks_up(void *, void *);
 
 #endif //SISTOP_UTILS_H

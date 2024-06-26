@@ -5,15 +5,21 @@
 
 #define INPUT_SIZE 20
 
+#define DISK_REQ_LOG_FMT "Process %d making I/O in track %d."
+#define DISK_FIN_LOG_FMT "Process %d finish I/O in track %d."
+
+#define PRINT_REQ_LOG_FMT "Process %d making print."
+#define PRINT_FIN_LOG_FMT "Process %d finish print."
+
 #define KERNEL_MEMORY_FMT "Remaining Memory: %d bytes."
 #define KERNEL_SEMAPH_FMT "Semaphores: %s"
 
 #define PROC_INTERFACE_FMT "PID %d, Name: %s, Seg ID: %d, Priority: %d, PC: %d, State: %s"
 #define MEMORY_INTERFACE_FMT "Segment ID: %d, Segment Size: %d Kb, Num Pages: %d."
 
-#define SCHED_PRINT_FMT "PID: %d, Print: %d ut, Remaining quantum: %d ut."
-#define SCHED_WRITE_FMT "PID: %d, Write: %d ut, Remaining quantum: %d ut."
-#define SCHED_READ_FMT "PID: %d, Read: %d ut, Remaining quantum: %d ut."
+#define SCHED_PRINT_FMT "PID: %d, Request print with %d ut."
+#define SCHED_WRITE_FMT "PID: %d, Request write operation in track %d."
+#define SCHED_READ_FMT "PID: %d, Request read operation in track %d."
 #define SCHED_EXEC_FMT "PID: %d, Exec: %d ut, Remaining quantum: %d ut."
 #define SCHED_SEMV_FMT "PID: %d, Release Semaph %c, Remaining quantum: %d ut."
 #define SCHED_SEMP_FMT "PID: %d, Request Semaph %c."
@@ -30,6 +36,7 @@ typedef struct {
 } Interface;
 
 extern Interface *sched_win;
+extern Interface *io_win;
 
 void Interface__init();
 Interface *Interface__create_window(int, int, int, int, char *, int);
