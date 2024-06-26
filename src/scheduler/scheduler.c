@@ -38,7 +38,6 @@ void Scheduler__schedule_process(Process *process, Scheduler *scheduler, SchedFl
             Kernel__syscall(FINISH_PROCESS, (void *) process);
             break;
 
-        // TODO: Print -> Quantum_end (Interrupt proc) | Read/Write -> IO_request (Disk request)
         case QUANTUM_END:
             Kernel__interrupt(INTERRUPT_PROCESS, (void *) process);
             break;
@@ -80,9 +79,10 @@ void Scheduler__interrupt_process() {
 /// \param process Process to be unlocked
 void Scheduler__unblock_process(Scheduler *scheduler, Process *process){
     List__remove_node(scheduler->blocked_queue, (void *) process, Utils__compare_process);
+    List__append(scheduler->sched_queue, (void *) process);
 
-    if (!List__contains(scheduler->sched_queue, (void *) process, Utils__compare_process))
-        List__append(scheduler->sched_queue, (void *) process);
+    //if (!List__contains(scheduler->sched_queue, (void *) process, Utils__compare_process))
+    //    List__append(scheduler->sched_queue, (void *) process);
 }
 
 /// Run the scheduler in CPU

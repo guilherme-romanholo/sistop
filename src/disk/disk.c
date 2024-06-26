@@ -2,10 +2,12 @@
 #include "../utils/list.h"
 #include "../kernel/kernel.h"
 #include "../scheduler/scheduler.h"
+#include <semaphore.h>
 #include <stdlib.h>
 #include <unistd.h>
-
 #include "../interface/interface.h"
+
+sem_t blocked_mutex;
 
 Disk *Disk__create() {
     Disk *disk = malloc(sizeof(Disk));
@@ -14,13 +16,14 @@ Disk *Disk__create() {
     disk->uplist = List__create();
     disk->downlist = List__create();
 
+    sem_init(&blocked_mutex, 0, 0);
+
     return disk;
 }
 
 void Disk__request(DiskRequest *disk_request) {
     // TODO: sem_wait (com elevador) para poder acessar
     if (kernel->disk->current == NULL) {
-        // Caso não tenha nenhuma E/S faz do novo
         //Por padrão insere na lista de up
         List__ordered_insert(kernel->disk->uplist, disk_request, Utils__compare_tracks_up);
     } else if (kernel->disk->current->track < disk_request->track) {
