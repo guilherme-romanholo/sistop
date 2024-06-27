@@ -11,8 +11,10 @@ void Process__create(const char *file) {
     char buffer[BUFFER_SIZE];
     FILE *fp = fopen(file, "r");
 
-    if (!fp)
-        return;
+    if (!fp) {
+      Interface__send_data(proc_win, "%s not exist. Place process in synt folder.", file);
+      return;
+    }
 
     Process *process = malloc(sizeof(Process));
 

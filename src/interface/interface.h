@@ -35,6 +35,7 @@ typedef struct {
     int curr_line;
 } Interface;
 
+extern Interface *proc_win;
 extern Interface *sched_win;
 extern Interface *io_win;
 
